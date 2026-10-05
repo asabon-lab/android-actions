@@ -3,8 +3,29 @@ name: CI
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.agents/**'
+      - '.githooks/**'
+      - '.github/pull_request_template.md'
+      - '.github/release-drafter.yml'
+      - '.github/workflows/release-drafter.yml'
+      - 'LICENSE'
+      - '.gitignore'
   pull_request:
     branches: [main]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.agents/**'
+      - '.githooks/**'
+      - '.github/pull_request_template.md'
+      - '.github/release-drafter.yml'
+      - '.github/workflows/release-drafter.yml'
+      - 'LICENSE'
+      - '.gitignore'
+  workflow_dispatch:
 
 jobs:
   test-python:

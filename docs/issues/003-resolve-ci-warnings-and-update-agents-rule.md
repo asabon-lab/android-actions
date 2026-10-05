@@ -19,6 +19,7 @@ GitHub Actions CI で発生している Node.js 20 廃止警告（Annotations）
 - [x] `.github/workflows/ci.yml`: `actions/checkout@v7`, `actions/setup-python@v7` にアップデート
 - [x] `.github/workflows/release-drafter.yml`: `release-drafter/release-drafter@v7` にアップデート
 - [x] `promote-play/action.yml`: `actions/setup-python@v7` にアップデート
+- [x] `.github/workflows/ci.yml`: ドキュメントや設定更新時の無駄な実行を防ぐ `paths-ignore` および `workflow_dispatch` を追加
 - [x] CI を実行し、Annotations の警告（Node.js 20 is deprecated...）がゼロになることを確認
 
 ---
