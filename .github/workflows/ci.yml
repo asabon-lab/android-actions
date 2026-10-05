@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test-python:
+    name: Test Python Scripts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade google-api-python-client google-auth
+
+      - name: Run Unit Tests
+        run: |
+          python -m unittest discover -s promote-play/scripts -p "test_*.py"
+
+  test-actions:
+    name: Test Composite Actions
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Test setup-keystore action
+        id: test_keystore
+        uses: ./setup-keystore
+        with:
+          keystore-base64: 'dGVzdC1rZXlzdG9yZS1jb250ZW50' # base64 for "test-keystore-content"
+          keystore-path: 'build/test-keystore.jks'
+
+      - name: Verify setup-keystore output
+        run: |
+          if [ ! -f "build/test-keystore.jks" ]; then
+            echo "::error::Keystore file was not created!"
+            exit 1
+          fi
+          CONTENT=$(cat "build/test-keystore.jks")
+          if [ "$CONTENT" != "test-keystore-content" ]; then
+            echo "::error::Decoded content mismatch: $CONTENT"
+            exit 1
+          fi
+          echo "setup-keystore verified successfully!"

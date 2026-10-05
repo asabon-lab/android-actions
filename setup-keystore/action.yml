@@ -1,0 +1,51 @@
+name: 'Setup Android Keystore'
+description: 'Decodes a base64-encoded Android release keystore to a target file path'
+author: 'asabon-lab'
+
+inputs:
+  keystore-base64:
+    description: 'Base64 encoded keystore file content'
+    required: true
+  keystore-path:
+    description: 'Destination path where keystore file will be written'
+    required: false
+    default: 'keystore/release.jks'
+
+outputs:
+  keystore-path:
+    description: 'Resolved path of the created keystore file'
+    value: ${{ steps.decode.outputs.keystore_path }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Validate Keystore Secret
+      shell: bash
+      env:
+        KEYSTORE_BASE64: ${{ inputs.keystore-base64 }}
+      run: |
+        if [ -z "$KEYSTORE_BASE64" ]; then
+          echo "::error::keystore-base64 input is empty. Please provide a valid Base64 encoded keystore."
+          exit 1
+        fi
+
+    - name: Decode Keystore File
+      id: decode
+      shell: bash
+      env:
+        KEYSTORE_BASE64: ${{ inputs.keystore-base64 }}
+        TARGET_PATH: ${{ inputs.keystore-path }}
+      run: |
+        TARGET_DIR=$(dirname "$TARGET_PATH")
+        mkdir -p "$TARGET_DIR"
+
+        echo "$KEYSTORE_BASE64" | base64 --decode > "$TARGET_PATH"
+
+        if [ ! -s "$TARGET_PATH" ]; then
+          echo "::error::Failed to decode keystore or resulting file is empty: $TARGET_PATH"
+          exit 1
+        fi
+
+        FILE_SIZE=$(wc -c < "$TARGET_PATH" | tr -d ' ')
+        echo "Keystore successfully written to $TARGET_PATH (${FILE_SIZE} bytes)"
+        echo "keystore_path=$TARGET_PATH" >> "$GITHUB_OUTPUT"
