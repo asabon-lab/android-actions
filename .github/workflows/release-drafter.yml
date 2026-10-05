@@ -20,8 +20,7 @@ jobs:
       pull-requests: write
     runs-on: ubuntu-latest
     steps:
-      - uses: release-drafter/release-drafter@v6
-        continue-on-error: true
+      - uses: release-drafter/release-drafter@v7
         with:
           commitish: main
         env:

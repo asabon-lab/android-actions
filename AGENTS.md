@@ -37,6 +37,19 @@
   1. Python スクリプトの単体テスト実行
   2. `setup-keystore` などのローカル Composite Action の実動作テスト
 
+### GitHub Actions CI & 警告（Warnings/Annotations）監視ルール
+GitHub Actions による CI 実行結果を確認する際は、単にジョブの「成功・失敗（Success / Failure）」を見るだけでなく、**警告（Annotations, Deprecation Warnings, Runner Notices）の有無を必ず確認し、迅速に対応・解消する**こと。
+
+1. **警告の確認方法**:
+   - `gh pr checks` や `gh run view <RUN_ID>` の出力において、`ANNOTATIONS` や `Warning:`、非推奨メッセージの有無を確認する（`.agents/skills/check-ci/` の活用）。
+2. **対象となる警告の例**:
+   - ランタイムや Action の非推奨警告（例: `Node.js 20 is deprecated... forced to run on Node.js 24`, `actions/checkout` や `setup-python` 等の最新バージョンへのアップグレード）。
+   - パッケージやツールの非推奨警告、依存関係の脆弱性通知。
+   - OS ランナー環境の移行予告（例: Ubuntu runner バージョン更新）。
+3. **対応指針**:
+   - 非推奨（Deprecation）や設定不備による警告は放置せず、速やかに修正コミットを作成して解消する。
+   - プラットフォーム全体の移行予告についても、影響有無を調査してユーザーに報告・提案する。
+
 ---
 
 ## 3. Git / GitHub ワークフロー & コミット規約
