@@ -3,28 +3,20 @@ name: CI
 on:
   push:
     branches: [main]
-    paths-ignore:
-      - '**.md'
-      - 'docs/**'
-      - '.agents/**'
-      - '.githooks/**'
-      - '.github/pull_request_template.md'
-      - '.github/release-drafter.yml'
-      - '.github/workflows/release-drafter.yml'
-      - 'LICENSE'
-      - '.gitignore'
+    paths:
+      - 'setup-keystore/**'
+      - 'promote-play/**'
+      - 'publish-release/**'
+      - '.github/workflows/ci.yml'
+      - '!**/*.md'
   pull_request:
     branches: [main]
-    paths-ignore:
-      - '**.md'
-      - 'docs/**'
-      - '.agents/**'
-      - '.githooks/**'
-      - '.github/pull_request_template.md'
-      - '.github/release-drafter.yml'
-      - '.github/workflows/release-drafter.yml'
-      - 'LICENSE'
-      - '.gitignore'
+    paths:
+      - 'setup-keystore/**'
+      - 'promote-play/**'
+      - 'publish-release/**'
+      - '.github/workflows/ci.yml'
+      - '!**/*.md'
   workflow_dispatch:
 
 jobs:
