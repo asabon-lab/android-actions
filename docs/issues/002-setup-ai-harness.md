@@ -18,7 +18,7 @@
 - [x] `.githooks/`: `main` への直接コミット・プッシュ防止、ブランチ命名規則検証（`pre-commit`, `pre-push`）
 - [x] `.agents/`: エージェント用ルール（`environment-isolation.md`）およびスキル（`create-issue`, `create-pr`, `check-ci`, `tag-release`）の配置
 - [x] `docs/`: `ROADMAP.md`, `RELEASE.md`, `issues/` 運用環境の構築
-- [x] `.github/pull_request_template.md`: 統一 PR テンプレートの配置
+- [x] `.github/`: PR テンプレート（`pull_request_template.md`）および Release Drafter（`release-drafter.yml`）の配置
 
 ---
 
