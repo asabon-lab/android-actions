@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+
+# Testing & Builds
+.pytest_cache/
+build/
+dist/
+*.egg-info/
+
+# Keystores & Secrets
+keystore/
+*.jks
+*.keystore
+*.json
+!action.yml
+!package.json
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db

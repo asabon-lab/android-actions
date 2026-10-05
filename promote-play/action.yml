@@ -1,0 +1,94 @@
+name: 'Promote Google Play Track'
+description: 'Promote an app release from one track (e.g. internal) to another (e.g. production) using Google Play Developer API'
+author: 'asabon-lab'
+
+inputs:
+  package-name:
+    description: 'Android package name (e.g. net.asabon.intervaltimer)'
+    required: true
+  service-account-json:
+    description: 'Service account JSON string or file path'
+    required: true
+  source-track:
+    description: 'Source track name to promote from (default: internal)'
+    required: false
+    default: 'internal'
+  target-track:
+    description: 'Target track name to promote to (default: production)'
+    required: false
+    default: 'production'
+  version-code:
+    description: 'Specific versionCode to promote (defaults to latest in source track)'
+    required: false
+    default: ''
+  status:
+    description: 'Release status for target track: completed, inProgress, draft, halted'
+    required: false
+    default: 'completed'
+  user-fraction:
+    description: 'User fraction for staged rollout (e.g. 0.1 for 10%). Valid with status: inProgress'
+    required: false
+    default: ''
+  dry-run:
+    description: 'Simulate promotion without committing changes (true or false)'
+    required: false
+    default: 'false'
+  python-version:
+    description: 'Python version to use'
+    required: false
+    default: '3.11'
+
+outputs:
+  promoted-version-code:
+    description: 'VersionCode of the promoted release'
+    value: ${{ steps.promote.outputs.promoted_version_code }}
+  edit-id:
+    description: 'Google Play application edit ID'
+    value: ${{ steps.promote.outputs.edit_id }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python-version }}
+
+    - name: Install Google Play API Client
+      shell: bash
+      run: |
+        pip install --upgrade google-api-python-client google-auth
+
+    - name: Execute Track Promotion
+      id: promote
+      shell: bash
+      env:
+        PLAY_CONSOLE_SERVICE_ACCOUNT_JSON: ${{ inputs.service-account-json }}
+        PACKAGE_NAME: ${{ inputs.package-name }}
+        SOURCE_TRACK: ${{ inputs.source-track }}
+        TARGET_TRACK: ${{ inputs.target-track }}
+        VERSION_CODE: ${{ inputs.version-code }}
+        STATUS: ${{ inputs.status }}
+        USER_FRACTION: ${{ inputs.user-fraction }}
+        DRY_RUN: ${{ inputs.dry-run }}
+      run: |
+        ARGS=(
+          "--package-name" "$PACKAGE_NAME"
+          "--source-track" "$SOURCE_TRACK"
+          "--target-track" "$TARGET_TRACK"
+          "--status" "$STATUS"
+        )
+
+        if [ -n "$VERSION_CODE" ]; then
+          ARGS+=("--version-code" "$VERSION_CODE")
+        fi
+
+        if [ -n "$USER_FRACTION" ]; then
+          ARGS+=("--user-fraction" "$USER_FRACTION")
+        fi
+
+        if [ "$DRY_RUN" = "true" ]; then
+          ARGS+=("--dry-run")
+        fi
+
+        python3 "${{ github.action_path }}/scripts/promote_track.py" "${ARGS[@]}"

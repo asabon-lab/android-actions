@@ -1,0 +1,180 @@
+name: 'Publish GitHub Release'
+description: 'Create, update, or publish GitHub Releases with assets and support for draft/prerelease promotion'
+author: 'asabon-lab'
+
+inputs:
+  github-token:
+    description: 'GitHub token with contents:write permission'
+    required: false
+    default: ${{ github.token }}
+  tag-name:
+    description: 'Tag name for the release (e.g. v1.0.0)'
+    required: true
+  release-title:
+    description: 'Title for the release (defaults to tag-name)'
+    required: false
+    default: ''
+  prerelease:
+    description: 'Whether this release is a pre-release (true or false)'
+    required: false
+    default: 'false'
+  draft:
+    description: 'Whether to create or keep this release as a draft (true or false)'
+    required: false
+    default: 'false'
+  make-latest:
+    description: 'Whether to mark as latest release (true, false, legacy, or auto)'
+    required: false
+    default: 'auto'
+  generate-notes:
+    description: 'Automatically generate release notes if creating a new release (true or false)'
+    required: false
+    default: 'true'
+  artifacts:
+    description: 'Path or glob pattern of artifacts to upload (e.g. release-artifacts/*)'
+    required: false
+    default: ''
+  update-existing-draft:
+    description: 'If true and a draft release exists, update and publish the existing draft'
+    required: false
+    default: 'true'
+
+outputs:
+  release-url:
+    description: 'HTML URL of the GitHub Release'
+    value: ${{ steps.publish.outputs.release_url }}
+  release-id:
+    description: 'GitHub Release ID'
+    value: ${{ steps.publish.outputs.release_id }}
+  tag-name:
+    description: 'Target tag name'
+    value: ${{ inputs.tag-name }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Publish or Update GitHub Release
+      id: publish
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+        TAG_NAME: ${{ inputs.tag-name }}
+        INPUT_TITLE: ${{ inputs.release-title }}
+        IS_PRERELEASE: ${{ inputs.prerelease }}
+        IS_DRAFT: ${{ inputs.draft }}
+        MAKE_LATEST: ${{ inputs.make-latest }}
+        GEN_NOTES: ${{ inputs.generate-notes }}
+        ARTIFACTS_PATTERN: ${{ inputs.artifacts }}
+        UPDATE_DRAFT: ${{ inputs.update-existing-draft }}
+      run: |
+        set -euo pipefail
+
+        TITLE="${INPUT_TITLE:-$TAG_NAME}"
+
+        # Determine make-latest flag
+        RESOLVED_LATEST="$MAKE_LATEST"
+        if [ "$RESOLVED_LATEST" = "auto" ]; then
+          if [ "$IS_PRERELEASE" = "false" ] && [ "$IS_DRAFT" = "false" ]; then
+            RESOLVED_LATEST="true"
+          else
+            RESOLVED_LATEST="false"
+          fi
+        fi
+
+        echo "🏷️ Target Release: $TAG_NAME"
+        echo "   Title: $TITLE"
+        echo "   Pre-release: $IS_PRERELEASE | Draft: $IS_DRAFT | Make Latest: $RESOLVED_LATEST"
+
+        # Check for existing draft release if enabled
+        DRAFT_ID=""
+        if [ "$UPDATE_DRAFT" = "true" ]; then
+          echo "🔍 Searching for existing draft releases in repository..."
+          DRAFT_ID=$(gh api "repos/${{ github.repository }}/releases" --jq '.[] | select(.draft == true) | .id' 2>/dev/null | head -n 1 || true)
+        fi
+
+        # Check if release already exists for this tag
+        EXISTS_FLAG="false"
+        if gh release view "$TAG_NAME" >/dev/null 2>&1; then
+          EXISTS_FLAG="true"
+        fi
+
+        if [ -n "$DRAFT_ID" ]; then
+          echo "📄 Found draft release ID: ${DRAFT_ID}. Publishing draft for tag ${TAG_NAME}..."
+          gh api -X PATCH "repos/${{ github.repository }}/releases/${DRAFT_ID}" \
+            -f tag_name="${TAG_NAME}" \
+            -f name="${TITLE}" \
+            -F draft="${IS_DRAFT}" \
+            -F prerelease="${IS_PRERELEASE}" \
+            -f make_latest="${RESOLVED_LATEST}" >/dev/null
+        elif [ "$EXISTS_FLAG" = "true" ]; then
+          echo "🔄 Release '${TAG_NAME}' already exists. Updating properties..."
+          EDIT_ARGS=("$TAG_NAME" "--title" "$TITLE")
+
+          if [ "$IS_PRERELEASE" = "true" ]; then
+            EDIT_ARGS+=("--prerelease")
+          else
+            EDIT_ARGS+=("--prerelease=false")
+          fi
+
+          if [ "$IS_DRAFT" = "true" ]; then
+            EDIT_ARGS+=("--draft")
+          else
+            EDIT_ARGS+=("--draft=false")
+          fi
+
+          if [ "$RESOLVED_LATEST" = "true" ]; then
+            EDIT_ARGS+=("--latest")
+          elif [ "$RESOLVED_LATEST" = "false" ]; then
+            EDIT_ARGS+=("--latest=false")
+          fi
+
+          gh release edit "${EDIT_ARGS[@]}"
+        else
+          echo "✨ Creating new release for tag '${TAG_NAME}'..."
+          CREATE_ARGS=("$TAG_NAME" "--title" "$TITLE")
+
+          if [ "$IS_PRERELEASE" = "true" ]; then
+            CREATE_ARGS+=("--prerelease")
+          fi
+
+          if [ "$IS_DRAFT" = "true" ]; then
+            CREATE_ARGS+=("--draft")
+          fi
+
+          if [ "$RESOLVED_LATEST" = "true" ]; then
+            CREATE_ARGS+=("--latest")
+          elif [ "$RESOLVED_LATEST" = "false" ]; then
+            CREATE_ARGS+=("--latest=false")
+          fi
+
+          if [ "$GEN_NOTES" = "true" ]; then
+            CREATE_ARGS+=("--generate-notes")
+          fi
+
+          gh release create "${CREATE_ARGS[@]}"
+        fi
+
+        # Upload artifacts if provided
+        if [ -n "$ARTIFACTS_PATTERN" ]; then
+          echo "📦 Uploading release artifacts matching '$ARTIFACTS_PATTERN'..."
+          # Expand glob using bash
+          shopt -s nullglob
+          FILES=( $ARTIFACTS_PATTERN )
+          shopt -u nullglob
+
+          if [ ${#FILES[@]} -eq 0 ]; then
+            echo "::warning::No files matched artifact pattern: $ARTIFACTS_PATTERN"
+          else
+            echo "   Uploading ${#FILES[@]} file(s): ${FILES[*]}"
+            gh release upload "$TAG_NAME" "${FILES[@]}" --clobber
+          fi
+        fi
+
+        # Retrieve and output release information
+        RELEASE_INFO=$(gh release view "$TAG_NAME" --json url,id 2>/dev/null || true)
+        RELEASE_URL=$(echo "$RELEASE_INFO" | jq -r '.url // empty')
+        RELEASE_ID=$(echo "$RELEASE_INFO" | jq -r '.id // empty')
+
+        echo "✅ Release successfully finalized: $RELEASE_URL"
+        echo "release_url=$RELEASE_URL" >> "$GITHUB_OUTPUT"
+        echo "release_id=$RELEASE_ID" >> "$GITHUB_OUTPUT"
