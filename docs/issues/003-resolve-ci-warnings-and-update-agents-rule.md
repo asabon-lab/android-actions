@@ -1,6 +1,6 @@
 # Issue #003: CI 警告の解消と AGENTS.md 監視ルールの追加
 
-- **ステータス**: 進行中
+- **ステータス**: 完了
 - **作成日**: 2026-10-05
 - **対象ブランチ**: `chore/003-resolve-ci-warnings`
 
@@ -19,7 +19,7 @@ GitHub Actions CI で発生している Node.js 20 廃止警告（Annotations）
 - [x] `.github/workflows/ci.yml`: `actions/checkout@v7`, `actions/setup-python@v7` にアップデート
 - [x] `.github/workflows/release-drafter.yml`: `release-drafter/release-drafter@v7` にアップデート
 - [x] `promote-play/action.yml`: `actions/setup-python@v7` にアップデート
-- [ ] CI を実行し、Annotations の警告（Node.js 20 is deprecated...）がゼロになることを確認
+- [x] CI を実行し、Annotations の警告（Node.js 20 is deprecated...）がゼロになることを確認
 
 ---
 
@@ -32,6 +32,6 @@ GitHub Actions CI で発生している Node.js 20 廃止警告（Annotations）
 
 ## ✅ 完了チェックリスト
 
-- [ ] 受け入れ基準を満たす実装・更新
-- [ ] CI（GitHub Actions）の通過
-- [ ] CI ログ上で警告（Node.js 20 非推奨等）が解消されていることの確認
+- [x] 受け入れ基準を満たす実装・更新
+- [x] CI（GitHub Actions）の通過
+- [x] CI ログ上で警告（Node.js 20 非推奨等）が解消されていることの確認
