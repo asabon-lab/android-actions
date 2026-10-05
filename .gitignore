@@ -14,6 +14,9 @@ build/
 dist/
 *.egg-info/
 
+# Temporary / Scratch workspace
+scratch/
+
 # Keystores & Secrets
 keystore/
 *.jks

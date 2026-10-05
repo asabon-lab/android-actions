@@ -124,6 +124,6 @@ gh run list --limit 5
 gh run view <RUN_ID>
 gh run view <RUN_ID> --log-failed
 
-# PR 作成
-gh pr create --title "[Chore] Issue #002: AI ハーネス開発環境の整備" --body-file "<一時ファイルパス>" --base main
+# PR 作成（本文は必ず scratch/pr_body.md 経由で指定）
+gh pr create --title "[Chore] Issue #002: AI ハーネス開発環境の整備" --body-file "scratch/pr_body.md" --base main
 ```
