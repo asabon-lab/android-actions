@@ -1,0 +1,89 @@
+# ==============================================================================
+# サンプル: Google Play & GitHub Releases 本番昇格ワークフロー
+#
+# 【トリガー】
+#   - 手動実行（workflow_dispatch）
+#
+# 【処理概要】
+#   1. 昇格対象タグの決定 & 既存本番重複ガード
+#   2. Google Play トラック昇格 (Internal -> Production) (promote-play)
+#   3. GitHub Release を本番 Full Release (Latest) に昇格 (publish-release)
+# ==============================================================================
+
+name: Promote to Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Tag name to promote (e.g. v1.2.0). Leave empty for latest pre-release.'
+        required: false
+        type: string
+        default: ''
+      dry_run:
+        description: 'Simulate promotion without committing changes'
+        required: false
+        type: boolean
+        default: false
+
+concurrency:
+  group: promote-production
+  cancel-in-progress: false
+
+jobs:
+  promote:
+    name: Promote Release to Production
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      # 1. 昇格対象タグの決定 & 既存本番重複ガード
+      - name: Determine Target Release
+        id: target
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          INPUT_TAG: ${{ inputs.tag_name }}
+        run: |
+          TAG_NAME="${INPUT_TAG}"
+          if [ -z "$TAG_NAME" ]; then
+            echo "🔍 Searching for latest pre-release..."
+            TAG_NAME=$(gh api "repos/${{ github.repository }}/releases" --jq '.[] | select(.prerelease == true and .draft == false) | .tag_name' | head -n 1 || true)
+          fi
+
+          if [ -z "$TAG_NAME" ]; then
+            echo "::error::No pre-release tag found to promote."
+            exit 1
+          fi
+
+          echo "Target tag: ${TAG_NAME}"
+
+          IS_PRERELEASE=$(gh release view "${TAG_NAME}" --json isPrerelease --jq '.isPrerelease' 2>/dev/null || true)
+          if [ "$IS_PRERELEASE" = "false" ]; then
+            echo "::error::Release '${TAG_NAME}' is ALREADY marked as full release! Aborting."
+            exit 1
+          fi
+
+          echo "tag_name=${TAG_NAME}" >> "$GITHUB_OUTPUT"
+
+      # 2. Google Play トラック昇格 (Internal -> Production)
+      - name: Promote on Google Play
+        uses: asabon-lab/android-actions/promote-play@v1
+        with:
+          package-name: com.example.myapp
+          service-account-json: ${{ secrets.PLAY_CONSOLE_SERVICE_ACCOUNT_JSON }}
+          source-track: internal
+          target-track: production
+          dry-run: ${{ inputs.dry_run }}
+
+      # 3. GitHub Release を本番 Full Release (Latest) に昇格
+      - name: Finalize GitHub Release
+        if: inputs.dry_run != true
+        uses: asabon-lab/android-actions/publish-release@v1
+        with:
+          tag-name: ${{ steps.target.outputs.tag_name }}
+          prerelease: false
+          make-latest: true

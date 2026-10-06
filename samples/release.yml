@@ -1,0 +1,99 @@
+# ==============================================================================
+# サンプル: リリースビルド & 内部テスト（Internal）配布ワークフロー
+#
+# 【トリガー】
+#   - タグ push（v*）
+#   - 手動実行（workflow_dispatch）
+#
+# 【処理概要】
+#   1. Keystore をデコード配置 (setup-keystore)
+#   2. AAB をビルド
+#   3. GitHub Release (Pre-release) を公開し成果物を添付 (publish-release)
+#   4. Google Play の Internal トラックへアップロード
+# ==============================================================================
+
+name: Release Build
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      create_release:
+        description: 'Create a GitHub Release draft'
+        required: false
+        type: boolean
+        default: false
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  release:
+    name: Build & Release Artifacts
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      # 1. Keystore のセットアップ
+      - name: Setup Keystore
+        id: keystore
+        uses: asabon-lab/android-actions/setup-keystore@v1
+        with:
+          keystore-base64: ${{ secrets.KEYSTORE_BASE64 }}
+          keystore-path: keystore/release.jks
+
+      # 2. リリースビルド (AAB)
+      - name: Build Release Bundle
+        env:
+          KEYSTORE_PATH: ${{ steps.keystore.outputs.keystore-path }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: ./gradlew bundleRelease
+
+      # 3. 成果物の整理
+      - name: Prepare Release Assets
+        run: |
+          VERSION="${GITHUB_REF_NAME:-latest}"
+          mkdir -p release-artifacts
+          cp app/build/outputs/bundle/release/*.aab "release-artifacts/MyApp-${VERSION}.aab" || cp app/build/outputs/bundle/release/*.aab release-artifacts/
+
+      # 4. GitHub Release (Pre-release) の公開 & AAB アップロード
+      - name: Publish GitHub Pre-Release
+        if: startsWith(github.ref, 'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.create_release == true)
+        uses: asabon-lab/android-actions/publish-release@v1
+        with:
+          tag-name: ${{ github.ref_name }}
+          prerelease: true
+          artifacts: release-artifacts/*
+
+      # 5. Google Play (Internal トラック) へのアップロード
+      - name: Upload to Google Play (Internal)
+        if: (startsWith(github.ref, 'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.create_release == true)) && secrets.PLAY_CONSOLE_SERVICE_ACCOUNT_JSON != ''
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_CONSOLE_SERVICE_ACCOUNT_JSON }}
+          packageName: com.example.myapp
+          releaseFiles: release-artifacts/*.aab
+          tracks: internal
+          status: completed
+          whatsNewDirectory: distribution/whatsnew
