@@ -1,6 +1,6 @@
 # Issue #005: ワークフロー例の samples/ 分離と README のリンク化
 
-- **ステータス**: 進行中
+- **ステータス**: 完了
 - **作成日**: 2026-10-07
 - **対象ブランチ**: `docs/005-extract-samples-and-link-readme`
 
@@ -18,10 +18,10 @@
 
 ## 📋 要件 / 受け入れ基準 (Acceptance Criteria)
 
-- [ ] `samples/release.yml` を作成し、リリースビルド & 内部テスト配布ワークフローを配置する。
-- [ ] `samples/promote-production.yml` を作成し、本番昇格ワークフローを配置する。
-- [ ] `README.md` の「クイックスタート：実践ワークフロー例」を案A（コアステップの要約スニペット ＋ `samples/` へのリンク）にリファクタリングする。
-- [ ] `samples/` 内の YAML 構文が正常であり、リポジトリ内のリンク切れがないこと。
+- [x] `samples/release.yml` を作成し、リリースビルド & 内部テスト配布ワークフローを配置する。
+- [x] `samples/promote-production.yml` を作成し、本番昇格ワークフローを配置する。
+- [x] `README.md` の「クイックスタート：実践ワークフロー例」を案A（コアステップの要約スニペット ＋ `samples/` へのリンク）にリファクタリングする。
+- [x] `samples/` 内の YAML 構文が正常であり、リポジトリ内のリンク切れがないこと。
 
 ---
 
@@ -37,8 +37,8 @@
 
 ## ✅ 完了チェックリスト
 
-- [ ] 受け入れ基準を満たす実装・更新
-- [ ] 単体テスト（test_*.py）の実行（既存機能に影響がないことの確認）
-- [ ] Action / ワークフロー構文の確認
-- [ ] ローカルテスト・CI（GitHub Actions）の通過
-- [ ] 各 Action の README.md およびルート README.md の更新（該当する場合）
+- [x] 受け入れ基準を満たす実装・更新
+- [x] 単体テスト（test_*.py）の実行（既存機能に影響がないことの確認）
+- [x] Action / ワークフロー構文の確認
+- [x] ローカルテスト・CI（GitHub Actions）の通過
+- [x] 各 Action の README.md およびルート README.md の更新（該当する場合）
