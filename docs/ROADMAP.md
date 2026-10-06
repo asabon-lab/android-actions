@@ -44,6 +44,7 @@ graph TD
 - [ ] **Action の堅牢化・追加オプション対応**
   - [ ] `publish-release`: 複数タグ・アセットの動的マッピング対応
   - [ ] `promote-play`: 段階的公開（Staged Rollout）の自動インクリメント対応
-- [ ] **新規 Android 開発用 Action の追加検討**
+- [ ] **新規 Android 開発用 Action の追加・拡充**
+  - [x] `analyze-build-log`: Android ビルドログの解析・アノテーション・Job Summary レポート出力（`android-build-log-analyzer` の統合）
   - [ ] `setup-android-sdk`: Android SDK / Command-line Tools のキャッシュ付きセットアップ
   - [ ] `run-android-lint`: Android Lint の実行 & PR コメント通知

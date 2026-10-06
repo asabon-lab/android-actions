@@ -1,6 +1,6 @@
 # Issue #006: android-build-log-analyzer の取り込み (analyze-build-log)
 
-- **ステータス**: 進行中
+- **ステータス**: 完了
 - **作成日**: 2026-10-07
 - **対象ブランチ**: `feature/006-import-analyze-build-log-action`
 
@@ -15,10 +15,10 @@
 
 ## 📋 要件 / 受け入れ基準 (Acceptance Criteria)
 
-- [ ] `analyze-build-log/action.yml` を Composite Action として定義し、以下の入力をサポートすること:
+- [x] `analyze-build-log/action.yml` を Composite Action として定義し、以下の入力をサポートすること:
   - `log-file-path` (必須): 解析対象のビルドログファイルパス
   - `report-path` (任意): 解析レポート (Markdown) の出力先ファイルパス
-- [ ] `analyze-build-log/scripts/analyze_build_log.py` を実装し、以下を満たすこと:
+- [x] `analyze-build-log/scripts/analyze_build_log.py` を実装し、以下を満たすこと:
   - Python 標準ライブラリのみで動作し、外部依存を持たないこと
   - ビルド時間の抽出およびタスク実行状態（Executed, Cached/Up-to-date, Skipped）の集計
   - エラー・警告の正規表現検出（`e:`, `w:`, `Error:`, `Warning:` 等）および行番号グルーピング
@@ -27,9 +27,9 @@
   - GitHub Step Summary（`$GITHUB_STEP_SUMMARY`）へのレポート追記
   - エラー検出時に非 0 終了コードで失敗すること
   - Windows 環境（cp932）でもエラーとならない UTF-8 出力配慮
-- [ ] `analyze-build-log/scripts/test_analyze_build_log.py` を作成し、旧リポジトリと同等以上のケースをカバーする単体テスト（`unittest`）が全件パスすること
-- [ ] `.github/workflows/ci.yml` に `analyze-build-log` の単体テスト実行および Action 動作検証を追加すること
-- [ ] `analyze-build-log/README.md` およびルートの `README.md` を更新すること
+- [x] `analyze-build-log/scripts/test_analyze_build_log.py` を作成し、旧リポジトリと同等以上のケースをカバーする単体テスト（`unittest`）が全件パスすること
+- [x] `.github/workflows/ci.yml` に `analyze-build-log` の単体テスト実行および Action 動作検証を追加すること
+- [x] `analyze-build-log/README.md` およびルートの `README.md` を更新すること
 
 ---
 
@@ -49,8 +49,8 @@
 
 ## ✅ 完了チェックリスト
 
-- [ ] 受け入れ基準を満たす実装・更新
-- [ ] 単体テスト（test_*.py）の作成または更新
-- [ ] Action / ワークフロー構文の確認
-- [ ] ローカルテスト・CI（GitHub Actions）の通過
-- [ ] 各 Action の README.md およびルート README.md の更新（該当する場合）
+- [x] 受け入れ基準を満たす実装・更新
+- [x] 単体テスト（test_*.py）の作成または更新
+- [x] Action / ワークフロー構文の確認
+- [x] ローカルテスト・CI（GitHub Actions）の通過
+- [x] 各 Action の README.md およびルート README.md の更新（該当する場合）

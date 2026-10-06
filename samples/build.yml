@@ -1,0 +1,31 @@
+name: Build & Analyze
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build & Analyze Log
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Build with Gradle
+        # ビルドログをファイルに記録しつつ標準出力にも流す
+        run: ./gradlew assembleDebug --stacktrace | tee build.log
+
+      - name: Analyze Build Log
+        uses: asabon-lab/android-actions/analyze-build-log@v1
+        if: always() # ビルドが失敗した場合でもログ解析・アノテーション出力を実行
+        with:
+          log-file-path: build.log
+          report-path: build-report.md

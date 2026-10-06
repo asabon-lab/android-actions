@@ -9,6 +9,7 @@ Android アプリケーションの CI/CD（ビルド・署名・Google Play 配
 | **[setup-keystore](setup-keystore/README.md)** | `asabon-lab/android-actions/setup-keystore@v1` | Base64 エンコードされた署名用キーストアをデコードし、ファイルとして安全に配置 |
 | **[promote-play](promote-play/README.md)** | `asabon-lab/android-actions/promote-play@v1` | Google Play Developer API を用いて、Internal トラックから Production（本番）等へリリースを昇格（二重リリース防止ガード・Dry-run付き） |
 | **[publish-release](publish-release/README.md)** | `asabon-lab/android-actions/publish-release@v1` | GitHub Releases のドラフト公開・Pre-release/Full Release 切替・ビルド成果物（AAB/APK）のアップロード |
+| **[analyze-build-log](analyze-build-log/README.md)** | `asabon-lab/android-actions/analyze-build-log@v1` | Android ビルドログの解析、エラー/警告のアノテーション、既知の非推奨警告分類、および Job Summary レポート出力 |
 
 ---
 
@@ -76,6 +77,28 @@ Internal トラックでテスト済みのリリースを Google Play の本番�
           tag-name: ${{ steps.target.outputs.tag_name }}
           prerelease: false
           make-latest: true
+```
+
+---
+
+### 3. PR ビルド & ログ解析 (`.github/workflows/build.yml`)
+
+Pull Request 作成時や push 時に Gradle ビルドを実行し、ビルドエラーや警告を自動的に解析・アノテーション表示します。
+
+> 📄 **完全なワークフローファイル**: [samples/build.yml](samples/build.yml)
+
+```yaml
+      # 1. Gradle ビルド（ログをファイルに記録）
+      - name: Build with Gradle
+        run: ./gradlew assembleDebug --stacktrace | tee build.log
+
+      # 2. ビルドログ解析 & アノテーション・Job Summary 出力
+      - name: Analyze Build Log
+        uses: asabon-lab/android-actions/analyze-build-log@v1
+        if: always() # ビルドが失敗した場合でも実行
+        with:
+          log-file-path: build.log
+          report-path: build-report.md
 ```
 
 ---
