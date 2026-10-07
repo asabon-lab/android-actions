@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Unit tests for analyze_build_log.py."""
 
+import io
 import os
 import tempfile
 import unittest
@@ -131,6 +132,23 @@ class TestBuildLogAnalyzer(unittest.TestCase):
         self.assertTrue(is_failed)
         self.assertIn("... and 7 others", report)
 
+    def test_emit_annotations_captured(self):
+        lines = [
+            "e: /path/Main.kt: (1,1): Compilation error",
+            "w: /path/Warning.kt: (2,2): Deprecation warning",
+        ]
+        analyzer = BuildLogAnalyzer("\n".join(lines))
+        fake_stdout = io.StringIO()
+        with patch("sys.stdout", fake_stdout):
+            report, is_failed, _ = analyzer.generate_report(emit_annotations=True)
+
+        self.assertTrue(is_failed)
+        output = fake_stdout.getvalue()
+        self.assertIn("::error title=Line 1::e: /path/Main.kt: (1,1): Compilation error", output)
+        self.assertIn(
+            "::warning title=Line 2::w: /path/Warning.kt: (2,2): Deprecation warning", output
+        )
+
 
 class TestCLIExecution(unittest.TestCase):
     """Test CLI commands and argument handling."""
@@ -145,10 +163,13 @@ class TestCLIExecution(unittest.TestCase):
             with open(log_file, "w", encoding="utf-8") as f:
                 f.write("> Task :app:assembleDebug UP-TO-DATE\nBUILD SUCCESSFUL in 5s\n")
 
-            with patch.dict(
-                os.environ, {"GITHUB_STEP_SUMMARY": summary_file, "GITHUB_OUTPUT": output_file}
-            ):
-                with patch(
+            with (
+                patch.dict(
+                    os.environ, {"GITHUB_STEP_SUMMARY": summary_file, "GITHUB_OUTPUT": output_file}
+                ),
+                patch("sys.stdout"),
+                patch("sys.stderr"),
+                patch(
                     "sys.argv",
                     [
                         "analyze_build_log.py",
@@ -157,8 +178,9 @@ class TestCLIExecution(unittest.TestCase):
                         "--report-path",
                         report_file,
                     ],
-                ):
-                    main()
+                ),
+            ):
+                main()
 
             self.assertTrue(os.path.exists(report_file))
             with open(report_file, encoding="utf-8") as f:
@@ -177,8 +199,10 @@ class TestCLIExecution(unittest.TestCase):
                 self.assertIn("warning-count=0", output_content)
 
     def test_cli_error_file_not_found(self):
-        with patch(
-            "sys.argv", ["analyze_build_log.py", "--log-file-path", "non_existent_file.log"]
+        with (
+            patch("sys.stdout"),
+            patch("sys.stderr"),
+            patch("sys.argv", ["analyze_build_log.py", "--log-file-path", "non_existent_file.log"]),
         ):
             with self.assertRaises(SystemExit) as cm:
                 main()
@@ -190,7 +214,11 @@ class TestCLIExecution(unittest.TestCase):
             with open(log_file, "w", encoding="utf-8") as f:
                 f.write("e: /path/Main.kt: (1,1): Compilation error\nBUILD FAILED in 3s\n")
 
-            with patch("sys.argv", ["analyze_build_log.py", "--log-file-path", log_file]):
+            with (
+                patch("sys.stdout"),
+                patch("sys.stderr"),
+                patch("sys.argv", ["analyze_build_log.py", "--log-file-path", log_file]),
+            ):
                 with self.assertRaises(SystemExit) as cm:
                     main()
                 self.assertEqual(cm.exception.code, 1)
