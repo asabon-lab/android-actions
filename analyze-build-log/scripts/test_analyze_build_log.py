@@ -153,6 +153,14 @@ class TestBuildLogAnalyzer(unittest.TestCase):
 class TestCLIExecution(unittest.TestCase):
     """Test CLI commands and argument handling."""
 
+    def setUp(self):
+        # Isolate all tests from real GitHub Actions environment variables
+        self.env_patcher = patch.dict(os.environ, {"GITHUB_STEP_SUMMARY": "", "GITHUB_OUTPUT": ""})
+        self.env_patcher.start()
+
+    def tearDown(self):
+        self.env_patcher.stop()
+
     def test_cli_success_with_report_file(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             log_file = os.path.join(tmpdir, "build.log")

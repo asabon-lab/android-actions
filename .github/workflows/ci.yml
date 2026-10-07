@@ -49,6 +49,8 @@ jobs:
   test-python:
     name: Test Python Scripts
     runs-on: ubuntu-latest
+    env:
+      GITHUB_STEP_SUMMARY: ''
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
