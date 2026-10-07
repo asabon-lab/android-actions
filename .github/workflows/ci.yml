@@ -46,6 +46,10 @@ jobs:
         run: |
           python -m unittest discover -s analyze-build-log/scripts -p "test_*.py"
 
+      - name: Run Unit Tests (publish-release)
+        run: |
+          python -m unittest discover -s publish-release/scripts -p "test_*.py"
+
   test-actions:
     name: Test Composite Actions
     runs-on: ubuntu-latest
