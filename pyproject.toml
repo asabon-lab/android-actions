@@ -1,0 +1,17 @@
+[project]
+name = "android-actions"
+version = "0.1.0"
+description = "Reusable GitHub Composite Actions for Android CI/CD pipelines"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [
+    { name = "asabon-lab" }
+]
+dependencies = [
+    "google-api-python-client>=2.100.0",
+    "google-auth>=2.20.0",
+]
+
+[dependency-groups]
+dev = []
