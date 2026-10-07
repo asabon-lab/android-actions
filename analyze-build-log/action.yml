@@ -1,0 +1,46 @@
+name: 'Android Build Log Analyzer'
+description: 'Analyze Android build logs for errors, warnings, and performance, annotating issues and generating summary reports'
+author: 'asabon-lab'
+
+inputs:
+  log-file-path:
+    description: 'Path to the Android build log file to analyze'
+    required: true
+  report-path:
+    description: 'Path to save the analysis report in Markdown format (optional)'
+    required: false
+    default: ''
+
+outputs:
+  report-path:
+    description: 'Path of the saved analysis report file'
+    value: ${{ steps.analyze.outputs.report-path }}
+  error-count:
+    description: 'Number of detected build errors'
+    value: ${{ steps.analyze.outputs.error-count }}
+  warning-count:
+    description: 'Number of detected build warnings'
+    value: ${{ steps.analyze.outputs.warning-count }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Analyze Build Log
+      id: analyze
+      shell: bash
+      env:
+        LOG_FILE_PATH: ${{ inputs.log-file-path }}
+        REPORT_PATH: ${{ inputs.report-path }}
+      run: |
+        ARGS=(
+          "--log-file-path" "$LOG_FILE_PATH"
+        )
+        if [ -n "$REPORT_PATH" ]; then
+          ARGS+=("--report-path" "$REPORT_PATH")
+        fi
+
+        if command -v python3 >/dev/null 2>&1; then
+          python3 "${{ github.action_path }}/scripts/analyze_build_log.py" "${ARGS[@]}"
+        else
+          python "${{ github.action_path }}/scripts/analyze_build_log.py" "${ARGS[@]}"
+        fi

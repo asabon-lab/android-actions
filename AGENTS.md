@@ -12,6 +12,7 @@
 1. **`setup-keystore/`**: Base64 署名キーストアのデコード・安全なファイル配置
 2. **`promote-play/`**: Google Play Developer API によるトラック間リリース昇格（二重防止ガード・Dry-run・段階公開対応）
 3. **`publish-release/`**: GitHub Releases 作成・Release Drafter 下書き昇格・アセット添付・Pre-release/Full Release 切替
+4. **`analyze-build-log/`**: Android ビルドログの解析・エラー/警告アノテーション・Job Summary レポート出力
 
 ### コア設計哲学
 - **疎結合 & 高凝集**: 各 Action は単一の明確な責務を持ち、他リポジトリから個別に参照可能とする。

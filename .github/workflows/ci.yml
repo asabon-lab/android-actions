@@ -7,6 +7,7 @@ on:
       - 'setup-keystore/**'
       - 'promote-play/**'
       - 'publish-release/**'
+      - 'analyze-build-log/**'
       - '.github/workflows/ci.yml'
       - '!**/*.md'
   pull_request:
@@ -15,6 +16,7 @@ on:
       - 'setup-keystore/**'
       - 'promote-play/**'
       - 'publish-release/**'
+      - 'analyze-build-log/**'
       - '.github/workflows/ci.yml'
       - '!**/*.md'
   workflow_dispatch:
@@ -36,9 +38,13 @@ jobs:
         run: |
           pip install --upgrade google-api-python-client google-auth
 
-      - name: Run Unit Tests
+      - name: Run Unit Tests (promote-play)
         run: |
           python -m unittest discover -s promote-play/scripts -p "test_*.py"
+
+      - name: Run Unit Tests (analyze-build-log)
+        run: |
+          python -m unittest discover -s analyze-build-log/scripts -p "test_*.py"
 
   test-actions:
     name: Test Composite Actions
@@ -66,3 +72,31 @@ jobs:
             exit 1
           fi
           echo "setup-keystore verified successfully!"
+
+      - name: Prepare dummy build log
+        run: |
+          mkdir -p build
+          cat << 'EOF' > build/dummy_build.log
+          > Task :app:preBuild UP-TO-DATE
+          > Task :app:assembleDebug UP-TO-DATE
+          BUILD SUCCESSFUL in 2s
+          EOF
+
+      - name: Test analyze-build-log action
+        id: test_analyzer
+        uses: ./analyze-build-log
+        with:
+          log-file-path: 'build/dummy_build.log'
+          report-path: 'build/dummy_report.md'
+
+      - name: Verify analyze-build-log output
+        run: |
+          if [ ! -f "build/dummy_report.md" ]; then
+            echo "::error::Analysis report was not generated!"
+            exit 1
+          fi
+          if [ "${{ steps.test_analyzer.outputs.error-count }}" != "0" ]; then
+            echo "::error::Expected error-count 0, got ${{ steps.test_analyzer.outputs.error-count }}"
+            exit 1
+          fi
+          echo "analyze-build-log verified successfully!"
