@@ -120,6 +120,12 @@ Pull Request 作成時や push 時に Gradle ビルドを実行し、ビルド�
 
 ---
 
+## 開発 & テスト
+
+本リポジトリへの貢献、ローカル環境での Python スクリプト単体テスト実行手順、および `uv` による環境構築については、[テスト & 開発ガイド (docs/TESTING.md)](docs/TESTING.md) を参照してください。
+
+---
+
 ## ライセンス
 
 [MIT License](LICENSE)
