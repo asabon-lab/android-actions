@@ -1,6 +1,6 @@
 # Issue #013: README の Repository Secrets 記載を Action 対応表に改善
 
-- **ステータス**: 進行中
+- **ステータス**: 完了
 - **作成日**: 2026-10-08
 - **対象ブランチ**: `docs/013-update-readme-secrets-table`
 
@@ -15,13 +15,13 @@
 
 ## 📋 要件 / 受け入れ基準 (Acceptance Criteria)
 
-- [ ] ルート `README.md` の「必要な Repository Secrets」セクションが Action と Secrets の対応表に更新されていること:
+- [x] ルート `README.md` の「必要な Repository Secrets」セクションが Action と Secrets の対応表に更新されていること:
   - `setup-keystore`: `KEYSTORE_BASE64`
   - `promote-play`: `PLAY_CONSOLE_SERVICE_ACCOUNT_JSON`
   - `publish-release`: `GITHUB_TOKEN`（通常は自動提供・`contents: write` 権限について言及）
   - `analyze-build-log`: Secret 不要である旨
   - （参考）Gradle リリースビルド用 Secret（`KEY_ALIAS`, `KEYSTORE_PASSWORD`, `KEY_PASSWORD`）の区別明記
-- [ ] ドキュメントのレイアウト・Markdown テーブル構文が崩れていないこと
+- [x] ドキュメントのレイアウト・Markdown テーブル構文が崩れていないこと
 
 ---
 
@@ -33,6 +33,6 @@
 
 ## ✅ 完了チェックリスト
 
-- [ ] 受け入れ基準を満たす実装・更新
-- [ ] Markdown 表示の確認
-- [ ] Issue ステータスの完了更新
+- [x] 受け入れ基準を満たす実装・更新
+- [x] Markdown 表示の確認
+- [x] Issue ステータスの完了更新
