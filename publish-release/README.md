@@ -11,6 +11,7 @@ GitHub Releases の作成・ドラフト公開・アセット添付・ステー�
   - Pre-release（`prerelease: true`）から本番 Full Release（`prerelease: false` & `make-latest: true`）への昇格
 - **アセットの一括アップロード**: ワイルドカード（glob パターン）でビルド成果物（`.aab` や `.apk` 等）を指定して一括アップロード（`--clobber` で上書き対応）。
 - **`make-latest` のスマート自動判定**: `auto`（デフォルト）の場合、Full Release（draft=false かつ prerelease=false）なら自動的に Latest に設定し、Pre-release や Draft なら Latest フラグを外します。
+- **リッチな Job Summary レポート**: リリース完了時に GitHub Actions の Job Summary（`$GITHUB_STEP_SUMMARY`）へリリース情報、アップロードされたアセット一覧、および `<details>` による折りたたみ形式のリリースノートを自動出力。
 
 ## Inputs
 

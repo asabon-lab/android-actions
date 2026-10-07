@@ -171,10 +171,54 @@ runs:
         fi
 
         # Retrieve and output release information
-        RELEASE_INFO=$(gh release view "$TAG_NAME" --json url,id 2>/dev/null || true)
+        RELEASE_INFO=$(gh release view "$TAG_NAME" --json url,id,name,tagName,isDraft,isPrerelease,assets,body 2>/dev/null || true)
         RELEASE_URL=$(echo "$RELEASE_INFO" | jq -r '.url // empty')
         RELEASE_ID=$(echo "$RELEASE_INFO" | jq -r '.id // empty')
 
         echo "✅ Release successfully finalized: $RELEASE_URL"
         echo "release_url=$RELEASE_URL" >> "$GITHUB_OUTPUT"
         echo "release_id=$RELEASE_ID" >> "$GITHUB_OUTPUT"
+
+        # Generate GitHub Step Summary if available
+        if [ -n "${GITHUB_STEP_SUMMARY:-}" ] && [ -n "$RELEASE_URL" ]; then
+          TYPE_DESC="Full Release"
+          if [ "$IS_DRAFT" = "true" ]; then
+            TYPE_DESC="Draft Release"
+          elif [ "$IS_PRERELEASE" = "true" ]; then
+            TYPE_DESC="Pre-release"
+          fi
+
+          if [ "$RESOLVED_LATEST" = "true" ]; then
+            TYPE_DESC="${TYPE_DESC} (Latest)"
+          fi
+
+          SAFE_TITLE=$(printf "%s" "$TITLE" | sed 's/|/\\|/g')
+          ASSET_COUNT=$(echo "$RELEASE_INFO" | jq -r '.assets | length // 0')
+          BODY=$(echo "$RELEASE_INFO" | jq -r '.body // empty')
+
+          {
+            echo "### 🚀 GitHub Release Published"
+            echo ""
+            echo "| 項目 | 内容 |"
+            echo "| :--- | :--- |"
+            echo "| **Release** | [${SAFE_TITLE}](${RELEASE_URL}) |"
+            echo "| **Tag** | \`${TAG_NAME}\` |"
+            echo "| **Release Type** | ${TYPE_DESC} |"
+            echo ""
+            if [ "$ASSET_COUNT" -gt 0 ]; then
+              echo "#### Uploaded Assets (${ASSET_COUNT} files)"
+              echo ""
+              echo "$RELEASE_INFO" | jq -r '.assets[] | "- `\(.name)`"'
+              echo ""
+            fi
+            if [ -n "$BODY" ]; then
+              echo "<details>"
+              echo "<summary><b>📝 Release Notes (クリックで展開)</b></summary>"
+              echo ""
+              printf "%s\n" "$BODY"
+              echo ""
+              echo "</details>"
+              echo ""
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+        fi
