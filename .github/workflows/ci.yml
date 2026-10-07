@@ -9,6 +9,8 @@ on:
       - 'publish-release/**'
       - 'analyze-build-log/**'
       - '.github/workflows/ci.yml'
+      - 'pyproject.toml'
+      - 'uv.lock'
       - '!**/*.md'
   pull_request:
     branches: [main]
@@ -18,10 +20,32 @@ on:
       - 'publish-release/**'
       - 'analyze-build-log/**'
       - '.github/workflows/ci.yml'
+      - 'pyproject.toml'
+      - 'uv.lock'
       - '!**/*.md'
   workflow_dispatch:
 
 jobs:
+  lint-python:
+    name: Lint Python Scripts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v10
+        with:
+          enable-cache: true
+
+      - name: Run Ruff Check
+        run: |
+          uv run ruff check --output-format=github .
+
+      - name: Run Ruff Format Check
+        run: |
+          uv run ruff format --check .
+
   test-python:
     name: Test Python Scripts
     runs-on: ubuntu-latest
