@@ -108,32 +108,41 @@ Pull Request 作成時や push 時に Gradle ビルドを実行し、ビルド�
 
 ## 必要な Repository Secrets
 
-呼び出し元のリポジトリの **Settings > Secrets and variables > Actions** に以下を設定します。
+利用する Action やワークフローに応じて、呼び出し元のリポジトリの **Settings > Secrets and variables > Actions** に必要な Secret を設定します。
 
-### Secret 一覧
+### Action が使用する Secret
 
-| ID | Secret 名 | 用途・説明 |
-|:---:|---|---|
-| **S1** | `KEYSTORE_BASE64` | `base64 release.jks` でエンコードしたキーストアの文字列 |
-| **S2** | `PLAY_CONSOLE_SERVICE_ACCOUNT_JSON` | Google Play Console API アクセス用のサービスアカウント JSON |
-| **S3** | `KEY_ALIAS` | キーストアのキーエイリアス（Gradle ビルド署名用） |
-| **S4** | `KEYSTORE_PASSWORD` | キーストアのパスワード（Gradle ビルド署名用） |
-| **S5** | `KEY_PASSWORD` | キーのパスワード（Gradle ビルド署名用） |
+本リポジトリの Action が直接入力として必要とする Secret は以下の **2つ** です。
 
-### Action と Secrets の対応表
+| ID | Secret 名 | 対象 Action | 用途・説明 |
+|:---:|---|---|---|
+| **S1** | `KEYSTORE_BASE64` | `setup-keystore` | `base64 release.jks` でエンコードした署名キーストアの文字列 |
+| **S2** | `PLAY_CONSOLE_SERVICE_ACCOUNT_JSON` | `promote-play` | Google Play Console API アクセス用のサービスアカウント JSON |
 
-各 Action およびビルドステップで必要となる Secret の対応表です（列の **S1〜S5** は上記「Secret 一覧」の ID に対応）。
+#### Action と Secrets の対応表
 
-| Action / ステップ | S1 | S2 | S3 | S4 | S5 |
-|---|:---:|:---:|:---:|:---:|:---:|
-| **`setup-keystore`** | ◯ | - | - | - | - |
-| **`promote-play`** | - | ◯ | - | - | - |
-| **`publish-release`** | - | - | - | - | - |
-| **`analyze-build-log`** | - | - | - | - | - |
-| *(参考: Gradle リリースビルド)* | - | - | ◯ | ◯ | ◯ |
+| Action | S1 (`KEYSTORE_BASE64`) | S2 (`PLAY_CONSOLE_...`) |
+|---|:---:|:---:|
+| **`setup-keystore`** | ◯ | - |
+| **`promote-play`** | - | ◯ |
+| **`publish-release`** | - | - |
+| **`analyze-build-log`** | - | - |
 
 > [!NOTE]
-> `publish-release` は通常 GitHub Actions が自動提供する `${{ github.token }}` を使用するため、別途 Repository Secret の作成は不要です（ワークフローに `contents: write` 権限が必要です）。`analyze-build-log` も Secret は不要です。
+> - `publish-release` は通常 GitHub Actions が自動提供する `${{ github.token }}` を使用するため、別途 Repository Secret の作成は不要です（ワークフローに `contents: write` 権限が必要です）。
+> - `analyze-build-log` は Secret を一切必要としません。
+
+---
+
+### (参考) Gradle ビルド署名で使用する Secret
+
+`setup-keystore` で配置したキーストアを用いてリリースビルド（`./gradlew bundleRelease` 等）を行う際、Gradle の署名設定（`signingConfigs`）に渡す環境変数として以下が別途必要になります：
+
+| Secret 名 | 用途・説明 |
+|---|---|
+| `KEY_ALIAS` | キーストアのキーエイリアス |
+| `KEYSTORE_PASSWORD` | キーストアのパスワード |
+| `KEY_PASSWORD` | キーのパスワード |
 
 ---
 
