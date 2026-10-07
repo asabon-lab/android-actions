@@ -74,7 +74,7 @@ class TestBuildLogAnalyzer(unittest.TestCase):
         report, is_failed, _ = analyzer.generate_report(emit_annotations=False)
 
         self.assertFalse(is_failed)
-        self.assertIn("### Known Warnings / Ignorable Warnings", report)
+        self.assertIn("#### Known Warnings / Ignorable Warnings", report)
         self.assertIn("`kotlinx-kover` プラグイン", report)
         self.assertIn("Found **0** errors and **0** warnings.", report)
 
@@ -88,7 +88,7 @@ class TestBuildLogAnalyzer(unittest.TestCase):
         report, is_failed, _ = analyzer.generate_report(emit_annotations=False)
 
         self.assertFalse(is_failed)
-        self.assertIn("### Known Warnings / Ignorable Warnings", report)
+        self.assertIn("#### Known Warnings / Ignorable Warnings", report)
         self.assertIn("`Android Gradle Plugin`", report)
 
     def test_classify_unknown_deprecation_warning(self):
@@ -100,7 +100,7 @@ class TestBuildLogAnalyzer(unittest.TestCase):
         report, is_failed, _ = analyzer.generate_report(emit_annotations=False)
 
         self.assertFalse(is_failed)
-        self.assertIn("### Known Warnings / Ignorable Warnings", report)
+        self.assertIn("#### Known Warnings / Ignorable Warnings", report)
         self.assertIn("`kotlinx-kover` または `Android Gradle Plugin` などの外部プラグイン", report)
 
     def test_parse_build_time_and_tasks(self):
@@ -115,6 +115,9 @@ class TestBuildLogAnalyzer(unittest.TestCase):
         report, is_failed, _ = analyzer.generate_report(emit_annotations=False)
 
         self.assertFalse(is_failed)
+        self.assertIn("### Android Build Log Analysis", report)
+        self.assertIn("#### Build Performance Summary", report)
+        self.assertIn("#### Error and Warning Analysis", report)
         self.assertIn("- **Total Build Time**: 1m 23s", report)
         self.assertIn("- **Total Tasks**: 4", report)
         self.assertIn("  - Executed: 1", report)
