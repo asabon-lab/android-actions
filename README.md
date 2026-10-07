@@ -1,6 +1,7 @@
 # Android Actions
 
 [![CI](https://github.com/asabon-lab/android-actions/actions/workflows/ci.yml/badge.svg)](https://github.com/asabon-lab/android-actions/actions/workflows/ci.yml)
+[![GitHub Release](https://img.shields.io/github/v/release/asabon-lab/android-actions)](https://github.com/asabon-lab/android-actions/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 Android アプリケーションの CI/CD（ビルド・署名・Google Play 配布・GitHub Releases 管理）を効率化・共通化するための GitHub Composite Actions 集です。
@@ -9,10 +10,10 @@ Android アプリケーションの CI/CD（ビルド・署名・Google Play 配
 
 | Action | パス | 説明 |
 |---|---|---|
-| **[setup-keystore](setup-keystore/README.md)** | `asabon-lab/android-actions/setup-keystore@v1` | Base64 エンコードされた署名用キーストアをデコードし、ファイルとして安全に配置 |
-| **[promote-play](promote-play/README.md)** | `asabon-lab/android-actions/promote-play@v1` | Google Play Developer API を用いて、Internal トラックから Production（本番）等へリリースを昇格（二重リリース防止ガード・Dry-run付き） |
-| **[publish-release](publish-release/README.md)** | `asabon-lab/android-actions/publish-release@v1` | GitHub Releases のドラフト公開・Pre-release/Full Release 切替・ビルド成果物（AAB/APK）のアップロード |
-| **[analyze-build-log](analyze-build-log/README.md)** | `asabon-lab/android-actions/analyze-build-log@v1` | Android ビルドログの解析、エラー/警告のアノテーション、既知の非推奨警告分類、および Job Summary レポート出力 |
+| **[setup-keystore](setup-keystore/README.md)** | `asabon-lab/android-actions/setup-keystore@v1` | Base64 エンコードされた署名用キーストアをデコードし、<br>ファイルとして安全に配置 |
+| **[promote-play](promote-play/README.md)** | `asabon-lab/android-actions/promote-play@v1` | Google Play Developer API を用いて、Internal トラックから<br>Production（本番）等へリリースを昇格<br>（二重リリース防止ガード・Dry-run付き） |
+| **[publish-release](publish-release/README.md)** | `asabon-lab/android-actions/publish-release@v1` | GitHub Releases のドラフト公開・Pre-release/Full Release 切替、<br>ビルド成果物（AAB/APK）のアップロード |
+| **[analyze-build-log](analyze-build-log/README.md)** | `asabon-lab/android-actions/analyze-build-log@v1` | Android ビルドログの解析、エラー/警告のアノテーション、<br>既知の非推奨警告分類、および Job Summary レポート出力 |
 
 ---
 
@@ -108,15 +109,41 @@ Pull Request 作成時や push 時に Gradle ビルドを実行し、ビルド�
 
 ## 必要な Repository Secrets
 
-呼び出し元のリポジトリの Settings > Secrets and variables > Actions に以下を設定します。
+利用する Action やワークフローに応じて、呼び出し元のリポジトリの **Settings > Secrets and variables > Actions** に必要な Secret を設定します。
 
-| Secret 名 | 用途 |
+### Action が使用する Secret
+
+本リポジトリの Action が直接入力として必要とする Secret は以下の **2つ** です。
+
+| ID | Secret 名 | 対象 Action | 用途・説明 |
+|:---:|---|---|---|
+| **S1** | `KEYSTORE_BASE64` | `setup-keystore` | `base64 release.jks` でエンコードした署名キーストアの文字列 |
+| **S2** | `PLAY_CONSOLE_SERVICE_ACCOUNT_JSON` | `promote-play` | Google Play Console API アクセス用のサービスアカウント JSON |
+
+#### Action と Secrets の対応表
+
+| Action | S1 (`KEYSTORE_BASE64`) | S2 (`PLAY_CONSOLE_...`) |
+|---|:---:|:---:|
+| **`setup-keystore`** | ◯ | - |
+| **`promote-play`** | - | ◯ |
+| **`publish-release`** | - | - |
+| **`analyze-build-log`** | - | - |
+
+> [!NOTE]
+> - `publish-release` は通常 GitHub Actions が自動提供する `${{ github.token }}` を使用するため、別途 Repository Secret の作成は不要です（ワークフローに `contents: write` 権限が必要です）。
+> - `analyze-build-log` は Secret を一切必要としません。
+
+---
+
+### (参考) Gradle ビルド署名で使用する Secret
+
+`setup-keystore` で配置したキーストアを用いてリリースビルド（`./gradlew bundleRelease` 等）を行う際、Gradle の署名設定（`signingConfigs`）に渡す環境変数として以下が別途必要になります：
+
+| Secret 名 | 用途・説明 |
 |---|---|
-| `KEYSTORE_BASE64` | `base64 release.jks` でエンコードしたキーストアの文字列 |
 | `KEY_ALIAS` | キーストアのキーエイリアス |
 | `KEYSTORE_PASSWORD` | キーストアのパスワード |
 | `KEY_PASSWORD` | キーのパスワード |
-| `PLAY_CONSOLE_SERVICE_ACCOUNT_JSON` | Google Play Console API アクセス用のサービスアカウント JSON |
 
 ---
 
