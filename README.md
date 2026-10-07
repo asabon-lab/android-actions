@@ -112,19 +112,19 @@ Pull Request 作成時や push 時に Gradle ビルドを実行し、ビルド�
 
 ### Secret 一覧
 
-| Secret 名 | 用途・説明 |
-|---|---|
-| `KEYSTORE_BASE64` | `base64 release.jks` でエンコードしたキーストアの文字列 |
-| `PLAY_CONSOLE_SERVICE_ACCOUNT_JSON` | Google Play Console API アクセス用のサービスアカウント JSON |
-| `KEY_ALIAS` | キーストアのキーエイリアス（Gradle ビルド署名用） |
-| `KEYSTORE_PASSWORD` | キーストアのパスワード（Gradle ビルド署名用） |
-| `KEY_PASSWORD` | キーのパスワード（Gradle ビルド署名用） |
+| ID | Secret 名 | 用途・説明 |
+|:---:|---|---|
+| **S1** | `KEYSTORE_BASE64` | `base64 release.jks` でエンコードしたキーストアの文字列 |
+| **S2** | `PLAY_CONSOLE_SERVICE_ACCOUNT_JSON` | Google Play Console API アクセス用のサービスアカウント JSON |
+| **S3** | `KEY_ALIAS` | キーストアのキーエイリアス（Gradle ビルド署名用） |
+| **S4** | `KEYSTORE_PASSWORD` | キーストアのパスワード（Gradle ビルド署名用） |
+| **S5** | `KEY_PASSWORD` | キーのパスワード（Gradle ビルド署名用） |
 
 ### Action と Secrets の対応表
 
-各 Action およびビルドステップで必要となる Secret の対応表です。
+各 Action およびビルドステップで必要となる Secret の対応表です（列の **S1〜S5** は上記「Secret 一覧」の ID に対応）。
 
-| Action / ステップ | `KEYSTORE_BASE64` | `PLAY_CONSOLE_SERVICE_ACCOUNT_JSON` | `KEY_ALIAS` | `KEYSTORE_PASSWORD` | `KEY_PASSWORD` |
+| Action / ステップ | S1 | S2 | S3 | S4 | S5 |
 |---|:---:|:---:|:---:|:---:|:---:|
 | **`setup-keystore`** | ◯ | - | - | - | - |
 | **`promote-play`** | - | ◯ | - | - | - |

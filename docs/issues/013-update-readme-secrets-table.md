@@ -16,11 +16,11 @@
 ## 📋 要件 / 受け入れ基準 (Acceptance Criteria)
 
 - [x] ルート `README.md` の「必要な Repository Secrets」セクションが Secret 一覧および Action と Secrets の対応マトリクス表に更新されていること:
-  - Secret 一覧（`KEYSTORE_BASE64`, `PLAY_CONSOLE_...`, `KEY_ALIAS`, `KEYSTORE_PASSWORD`, `KEY_PASSWORD` の用途）
-  - Action と Secrets の対応マトリクス表（各 Action ごとに必要な Secret を ◯ / - で明記）
+  - Secret 一覧（ID S1〜S5 を採番し、各 Secret の用途を明記）
+  - Action と Secrets の対応マトリクス表（横幅圧縮のため S1〜S5 ヘッダーを使用し、各 Action で必要な Secret を ◯ / - で明記）
   - `publish-release`（自動提供トークン）および `analyze-build-log`（Secret 不要）の注記
   - （参考）Gradle リリースビルド用 Secret の区別明記
-- [x] ドキュメントのレイアウト・Markdown テーブル構文が崩れていないこと
+- [x] ドキュメントのレイアウト・Markdown テーブル構文が崩れておらず、コンパクトに表示されること
 
 ---
 
