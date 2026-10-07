@@ -32,6 +32,7 @@
 - **依存関係の最小化**: 必要最小限の公式クライアント（`google-api-python-client`, `google-auth` 等）のみを使用する。
 - **クロスプラットフォーム配慮**: Windows 環境（cp932）での `UnicodeEncodeError` を防ぐため、コンソール出力には装飾絵文字ではなくプレーンなテキストプレフィックス（`[INFO]`, `[SUCCESS]`, `[GUARD]` など）を使用し、`sys.stdout.reconfigure(encoding="utf-8")` を配慮する。
 - **単体テストの必須化**: スクリプトのロジック（引数パース、ガード条件、dry-run、API 呼び出し）は、外部 API をモックした単体テスト（`test_*.py`）を必ず作成し、`python -m unittest` で全件パスすることを保証する。
+- **パッケージ & 仮想環境管理 (`uv`)**: ルートの `pyproject.toml` および `uv.lock` により、`uv run python -m unittest ...` で高速かつ決定論的に仮想環境構築・テスト実行を行えるようにする。
 
 ### CI（GitHub Actions）との連携
 - プルリクエスト作成時および `main` ブランチ push 時に `.github/workflows/ci.yml` が自動実行され、以下を検証する：
@@ -117,7 +118,12 @@ GitHub Actions による CI 実行結果を確認する際は、単にジョブ�
 # Git Hooks の有効化
 git config core.hooksPath .githooks
 
-# Python 単体テストの実行
+# Python 単体テストの実行 (uv 推奨)
+uv run python -m unittest discover -s promote-play/scripts -p "test_*.py"
+uv run python -m unittest discover -s analyze-build-log/scripts -p "test_*.py"
+uv run python -m unittest discover -s publish-release/scripts -p "test_*.py"
+
+# Python 単体テストの実行 (標準 python)
 python -m unittest discover -s promote-play/scripts -p "test_*.py"
 
 # GitHub Actions CI 状況の確認
