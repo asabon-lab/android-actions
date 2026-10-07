@@ -56,7 +56,7 @@ class BuildLogAnalyzer:
         from_cache = sum(1 for _, outcome in tasks if outcome == "FROM-CACHE")
         cached_or_up_to_date = from_cache + up_to_date
 
-        markdown = "### Build Performance Summary\n\n"
+        markdown = "#### Build Performance Summary\n\n"
         markdown += f"- **Total Build Time**: {total_time}\n"
         markdown += f"- **Total Tasks**: {len(tasks)}\n"
         markdown += f"  - Executed: {executed}\n"
@@ -138,7 +138,7 @@ class BuildLogAnalyzer:
                         print(f"::warning title=Line {line_num}::{message}")
 
         # Build Markdown section
-        markdown = "### Error and Warning Analysis\n\n"
+        markdown = "#### Error and Warning Analysis\n\n"
         markdown += f"Found **{error_count}** errors and **{warning_count}** warnings.\n\n"
 
         if issues_map:
@@ -167,7 +167,7 @@ class BuildLogAnalyzer:
             markdown += "✨ No errors or warnings found.\n"
 
         if known_warnings:
-            markdown += "\n### Known Warnings / Ignorable Warnings\n\n"
+            markdown += "\n#### Known Warnings / Ignorable Warnings\n\n"
             for kw in known_warnings:
                 cause = kw["cause"]
                 if cause == "kotlinx-kover":
@@ -204,7 +204,7 @@ class BuildLogAnalyzer:
             emit_annotations=emit_annotations
         )
 
-        full_report = "## Android Build Log Analysis\n\n"
+        full_report = "### Android Build Log Analysis\n\n"
         full_report += perf_md
         full_report += err_md
 
