@@ -108,15 +108,15 @@ Pull Request 作成時や push 時に Gradle ビルドを実行し、ビルド�
 
 ## 必要な Repository Secrets
 
-呼び出し元のリポジトリの Settings > Secrets and variables > Actions に以下を設定します。
+利用する Action やワークフローに応じて、呼び出し元のリポジトリの **Settings > Secrets and variables > Actions** に必要な Secret を設定します。
 
-| Secret 名 | 用途 |
-|---|---|
-| `KEYSTORE_BASE64` | `base64 release.jks` でエンコードしたキーストアの文字列 |
-| `KEY_ALIAS` | キーストアのキーエイリアス |
-| `KEYSTORE_PASSWORD` | キーストアのパスワード |
-| `KEY_PASSWORD` | キーのパスワード |
-| `PLAY_CONSOLE_SERVICE_ACCOUNT_JSON` | Google Play Console API アクセス用のサービスアカウント JSON |
+| Action / 用途 | 必要な Secret | 説明 |
+|---|---|---|
+| **`setup-keystore`** | `KEYSTORE_BASE64` | `base64 release.jks` でエンコードした署名キーストアの文字列 |
+| **`promote-play`** | `PLAY_CONSOLE_SERVICE_ACCOUNT_JSON` | Google Play Console API アクセス用のサービスアカウント JSON |
+| **`publish-release`** | `GITHUB_TOKEN`<br>*(通常は自動提供)* | リリース作成・アセット添付用（ワークフローに `contents: write` 権限が必要） |
+| **`analyze-build-log`** | *(不要)* | Secret は必要ありません |
+| *(参考: Gradle リリースビルド)* | `KEY_ALIAS`<br>`KEYSTORE_PASSWORD`<br>`KEY_PASSWORD` | リリースビルド（`bundleRelease` 等）で署名を行う際に Gradle へ渡す環境変数 |
 
 ---
 
