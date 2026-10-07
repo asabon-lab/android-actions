@@ -108,15 +108,32 @@ Pull Request 作成時や push 時に Gradle ビルドを実行し、ビルド�
 
 ## 必要な Repository Secrets
 
-利用する Action やワークフローに応じて、呼び出し元のリポジトリの **Settings > Secrets and variables > Actions** に必要な Secret を設定します。
+呼び出し元のリポジトリの **Settings > Secrets and variables > Actions** に以下を設定します。
 
-| Action / 用途 | 必要な Secret | 説明 |
-|---|---|---|
-| **`setup-keystore`** | `KEYSTORE_BASE64` | `base64 release.jks` でエンコードした署名キーストアの文字列 |
-| **`promote-play`** | `PLAY_CONSOLE_SERVICE_ACCOUNT_JSON` | Google Play Console API アクセス用のサービスアカウント JSON |
-| **`publish-release`** | `GITHUB_TOKEN`<br>*(通常は自動提供)* | リリース作成・アセット添付用（ワークフローに `contents: write` 権限が必要） |
-| **`analyze-build-log`** | *(不要)* | Secret は必要ありません |
-| *(参考: Gradle リリースビルド)* | `KEY_ALIAS`<br>`KEYSTORE_PASSWORD`<br>`KEY_PASSWORD` | リリースビルド（`bundleRelease` 等）で署名を行う際に Gradle へ渡す環境変数 |
+### Secret 一覧
+
+| Secret 名 | 用途・説明 |
+|---|---|
+| `KEYSTORE_BASE64` | `base64 release.jks` でエンコードしたキーストアの文字列 |
+| `PLAY_CONSOLE_SERVICE_ACCOUNT_JSON` | Google Play Console API アクセス用のサービスアカウント JSON |
+| `KEY_ALIAS` | キーストアのキーエイリアス（Gradle ビルド署名用） |
+| `KEYSTORE_PASSWORD` | キーストアのパスワード（Gradle ビルド署名用） |
+| `KEY_PASSWORD` | キーのパスワード（Gradle ビルド署名用） |
+
+### Action と Secrets の対応表
+
+各 Action およびビルドステップで必要となる Secret の対応表です。
+
+| Action / ステップ | `KEYSTORE_BASE64` | `PLAY_CONSOLE_SERVICE_ACCOUNT_JSON` | `KEY_ALIAS` | `KEYSTORE_PASSWORD` | `KEY_PASSWORD` |
+|---|:---:|:---:|:---:|:---:|:---:|
+| **`setup-keystore`** | ◯ | - | - | - | - |
+| **`promote-play`** | - | ◯ | - | - | - |
+| **`publish-release`** | - | - | - | - | - |
+| **`analyze-build-log`** | - | - | - | - | - |
+| *(参考: Gradle リリースビルド)* | - | - | ◯ | ◯ | ◯ |
+
+> [!NOTE]
+> `publish-release` は通常 GitHub Actions が自動提供する `${{ github.token }}` を使用するため、別途 Repository Secret の作成は不要です（ワークフローに `contents: write` 権限が必要です）。`analyze-build-log` も Secret は不要です。
 
 ---
 

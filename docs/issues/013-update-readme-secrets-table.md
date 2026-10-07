@@ -15,12 +15,11 @@
 
 ## 📋 要件 / 受け入れ基準 (Acceptance Criteria)
 
-- [x] ルート `README.md` の「必要な Repository Secrets」セクションが Action と Secrets の対応表に更新されていること:
-  - `setup-keystore`: `KEYSTORE_BASE64`
-  - `promote-play`: `PLAY_CONSOLE_SERVICE_ACCOUNT_JSON`
-  - `publish-release`: `GITHUB_TOKEN`（通常は自動提供・`contents: write` 権限について言及）
-  - `analyze-build-log`: Secret 不要である旨
-  - （参考）Gradle リリースビルド用 Secret（`KEY_ALIAS`, `KEYSTORE_PASSWORD`, `KEY_PASSWORD`）の区別明記
+- [x] ルート `README.md` の「必要な Repository Secrets」セクションが Secret 一覧および Action と Secrets の対応マトリクス表に更新されていること:
+  - Secret 一覧（`KEYSTORE_BASE64`, `PLAY_CONSOLE_...`, `KEY_ALIAS`, `KEYSTORE_PASSWORD`, `KEY_PASSWORD` の用途）
+  - Action と Secrets の対応マトリクス表（各 Action ごとに必要な Secret を ◯ / - で明記）
+  - `publish-release`（自動提供トークン）および `analyze-build-log`（Secret 不要）の注記
+  - （参考）Gradle リリースビルド用 Secret の区別明記
 - [x] ドキュメントのレイアウト・Markdown テーブル構文が崩れていないこと
 
 ---
