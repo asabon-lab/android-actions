@@ -144,7 +144,9 @@ def main():
         print(f"Failed to create app edit: {e}", file=sys.stderr)
         sys.exit(1)
 
-    print(f"[2/4] Inspecting tracks (source: '{source_track_name}', target: '{target_track_name}')...")
+    print(
+        f"[2/4] Inspecting tracks (source: '{source_track_name}', target: '{target_track_name}')..."
+    )
 
     # 1. Fetch source track
     try:
@@ -160,7 +162,10 @@ def main():
 
     source_releases = source_track.get("releases", [])
     if not source_releases:
-        print(f"Error: No releases found in source track '{source_track_name}' to promote.", file=sys.stderr)
+        print(
+            f"Error: No releases found in source track '{source_track_name}' to promote.",
+            file=sys.stderr,
+        )
         sys.exit(1)
 
     # 2. Identify target release to promote
@@ -183,7 +188,9 @@ def main():
     target_vcs = [int(vc) for vc in target_release.get("versionCodes", [])]
     target_name = target_release.get("name", f"versionCode-{target_vcs}")
     primary_vc = target_vcs[0] if target_vcs else 0
-    print(f"      Target release from '{source_track_name}': {target_name} (versionCodes: {target_vcs})")
+    print(
+        f"      Target release from '{source_track_name}': {target_name} (versionCodes: {target_vcs})"
+    )
 
     # 3. Fetch target track & Duplicate Guard Check
     try:
@@ -198,7 +205,10 @@ def main():
         if getattr(e, "resp", None) and getattr(e.resp, "status", None) == 404:
             target_existing_releases = []
         else:
-            print(f"Warning: Failed to fetch existing '{target_track_name}' track: {e}", file=sys.stderr)
+            print(
+                f"Warning: Failed to fetch existing '{target_track_name}' track: {e}",
+                file=sys.stderr,
+            )
             target_existing_releases = []
 
     target_existing_vcs = set()
@@ -253,7 +263,9 @@ def main():
     print(f"[4/4] Committing edit '{edit_id}'...")
     try:
         commit_res = service.edits().commit(packageName=package_name, editId=edit_id).execute()
-        print(f"[SUCCESS] Successfully promoted {target_name} (versionCodes: {target_vcs}) to '{target_track_name}' track!")
+        print(
+            f"[SUCCESS] Successfully promoted {target_name} (versionCodes: {target_vcs}) to '{target_track_name}' track!"
+        )
         print(f"          Commit response: {commit_res}")
         append_github_output("promoted_version_code", str(primary_vc))
         append_github_output("edit_id", edit_id)

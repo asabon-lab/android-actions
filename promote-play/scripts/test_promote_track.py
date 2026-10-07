@@ -1,7 +1,7 @@
-import unittest
-from unittest.mock import MagicMock, patch
 import os
 import sys
+import unittest
+from unittest.mock import MagicMock, patch
 
 # Add scripts directory to sys.path
 sys.path.insert(0, os.path.dirname(__file__))
@@ -25,12 +25,18 @@ class TestPromoteTrack(unittest.TestCase):
     def test_parse_args_custom(self):
         test_args = [
             "promote_track.py",
-            "--package-name", "net.asabon.intervaltimer",
-            "--source-track", "beta",
-            "--target-track", "production",
-            "--version-code", "42",
-            "--status", "inProgress",
-            "--user-fraction", "0.25",
+            "--package-name",
+            "net.asabon.intervaltimer",
+            "--source-track",
+            "beta",
+            "--target-track",
+            "production",
+            "--version-code",
+            "42",
+            "--status",
+            "inProgress",
+            "--user-fraction",
+            "0.25",
             "--dry-run",
         ]
         with patch.object(sys, "argv", test_args):
@@ -84,8 +90,10 @@ class TestPromoteTrack(unittest.TestCase):
 
         test_args = [
             "promote_track.py",
-            "--package-name", "com.example.app",
-            "--service-account-json", '{"type": "service_account"}',
+            "--package-name",
+            "com.example.app",
+            "--service-account-json",
+            '{"type": "service_account"}',
         ]
         with patch.object(sys, "argv", test_args):
             with self.assertRaises(SystemExit) as cm:
@@ -116,8 +124,10 @@ class TestPromoteTrack(unittest.TestCase):
 
         test_args = [
             "promote_track.py",
-            "--package-name", "com.example.app",
-            "--service-account-json", '{"type": "service_account"}',
+            "--package-name",
+            "com.example.app",
+            "--service-account-json",
+            '{"type": "service_account"}',
             "--dry-run",
         ]
         with patch.object(sys, "argv", test_args):
@@ -150,8 +160,10 @@ class TestPromoteTrack(unittest.TestCase):
 
         test_args = [
             "promote_track.py",
-            "--package-name", "com.example.app",
-            "--service-account-json", '{"type": "service_account"}',
+            "--package-name",
+            "com.example.app",
+            "--service-account-json",
+            '{"type": "service_account"}',
         ]
         with patch.object(sys, "argv", test_args):
             promote_track.main()

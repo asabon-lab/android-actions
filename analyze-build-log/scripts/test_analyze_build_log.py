@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Unit tests for analyze_build_log.py."""
 
-import io
 import os
 import tempfile
 import unittest
@@ -125,7 +124,6 @@ class TestBuildLogAnalyzer(unittest.TestCase):
         self.assertIn("  - SKIPPED: 1", report)
 
     def test_many_error_lines_abbreviation(self):
-        lines = [f"Error: Common error on line {i}" for i in range(10)]
         # Map with same message
         lines_same = ["Error: Identical error"] * 10
         analyzer = BuildLogAnalyzer("\n".join(lines_same))
@@ -147,28 +145,41 @@ class TestCLIExecution(unittest.TestCase):
             with open(log_file, "w", encoding="utf-8") as f:
                 f.write("> Task :app:assembleDebug UP-TO-DATE\nBUILD SUCCESSFUL in 5s\n")
 
-            with patch.dict(os.environ, {"GITHUB_STEP_SUMMARY": summary_file, "GITHUB_OUTPUT": output_file}):
-                with patch("sys.argv", ["analyze_build_log.py", "--log-file-path", log_file, "--report-path", report_file]):
+            with patch.dict(
+                os.environ, {"GITHUB_STEP_SUMMARY": summary_file, "GITHUB_OUTPUT": output_file}
+            ):
+                with patch(
+                    "sys.argv",
+                    [
+                        "analyze_build_log.py",
+                        "--log-file-path",
+                        log_file,
+                        "--report-path",
+                        report_file,
+                    ],
+                ):
                     main()
 
             self.assertTrue(os.path.exists(report_file))
-            with open(report_file, "r", encoding="utf-8") as f:
+            with open(report_file, encoding="utf-8") as f:
                 content = f.read()
                 self.assertIn("Build Performance Summary", content)
 
             self.assertTrue(os.path.exists(summary_file))
-            with open(summary_file, "r", encoding="utf-8") as f:
+            with open(summary_file, encoding="utf-8") as f:
                 self.assertIn("Build Performance Summary", f.read())
 
             self.assertTrue(os.path.exists(output_file))
-            with open(output_file, "r", encoding="utf-8") as f:
+            with open(output_file, encoding="utf-8") as f:
                 output_content = f.read()
                 self.assertIn(f"report-path={report_file}", output_content)
                 self.assertIn("error-count=0", output_content)
                 self.assertIn("warning-count=0", output_content)
 
     def test_cli_error_file_not_found(self):
-        with patch("sys.argv", ["analyze_build_log.py", "--log-file-path", "non_existent_file.log"]):
+        with patch(
+            "sys.argv", ["analyze_build_log.py", "--log-file-path", "non_existent_file.log"]
+        ):
             with self.assertRaises(SystemExit) as cm:
                 main()
             self.assertEqual(cm.exception.code, 1)
