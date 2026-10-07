@@ -19,6 +19,7 @@
   - Action が使用する Secret 一覧（S1, S2 のみ）およびコンパクトな対応表（S1, S2）
   - `publish-release`（自動提供トークン）および `analyze-build-log`（Secret 不要）の注記
   - (参考) Gradle ビルド署名で使用する Secret（`KEY_ALIAS`, `KEYSTORE_PASSWORD`, `KEY_PASSWORD`）の明確な分離
+- [x] ルート `README.md` の「含まれる Actions」表の説明文に `<br>` を挿入し、Action 名やパスの不自然な改行を防止すること
 - [x] ドキュメントのレイアウト・Markdown テーブル構文が崩れておらず、コンパクトに表示されること
 
 ---
