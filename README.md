@@ -1,5 +1,8 @@
 # Android Actions
 
+[![CI](https://github.com/asabon-lab/android-actions/actions/workflows/ci.yml/badge.svg)](https://github.com/asabon-lab/android-actions/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 Android アプリケーションの CI/CD（ビルド・署名・Google Play 配布・GitHub Releases 管理）を効率化・共通化するための GitHub Composite Actions 集です。
 
 ## 含まれる Actions
