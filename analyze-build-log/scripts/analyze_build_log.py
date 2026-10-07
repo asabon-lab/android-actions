@@ -218,6 +218,16 @@ def main() -> None:
         default="",
         help="Path to save the analysis report in Markdown format",
     )
+    parser.add_argument(
+        "--disable-summary",
+        action="store_true",
+        help="Disable output to GitHub Step Summary",
+    )
+    parser.add_argument(
+        "--disable-annotations",
+        action="store_true",
+        help="Disable emitting GitHub workflow command annotations (::error, ::warning)",
+    )
     args = parser.parse_args()
 
     if not os.path.exists(args.log_file_path):
@@ -230,11 +240,13 @@ def main() -> None:
         log_content = f.read()
 
     analyzer = BuildLogAnalyzer(log_content)
-    report, is_failed, failure_msg = analyzer.generate_report(emit_annotations=True)
+    report, is_failed, failure_msg = analyzer.generate_report(
+        emit_annotations=not args.disable_annotations
+    )
 
     # Output to GitHub Step Summary if available
     summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
-    if summary_path:
+    if not args.disable_summary and summary_path:
         try:
             with open(summary_path, "a", encoding="utf-8") as f:
                 f.write(report + "\n")

@@ -20,6 +20,8 @@ Python コードの品質・スタイルの一貫性を担保し、コードベ�
 - [x] 既存の Python スクリプト（`promote-play/scripts/`, `analyze-build-log/scripts/`, `publish-release/scripts/`）に対して `ruff check` を実行し、全件パス（警告・エラーゼロ）すること
 - [x] `.github/workflows/ci.yml` に Ruff Lint チェック用ジョブ（`lint-python` 等）を追加し、PR / Push 時に自動実行されること
 - [x] ドキュメント（`docs/TESTING.md`, `AGENTS.md`）に Ruff による静的解析コマンドの説明を追記すること
+- [x] 単体テスト実行時の GitHub Workflow Commands（`::error`）の漏洩を防止し、偽陽性のアノテーションを排除すること
+- [x] `analyze-build-log` に `enable-summary` および `emit-annotations` オプションを追加し、CI テスト時の不要な Step Summary 出力を抑制すること
 
 ---
 

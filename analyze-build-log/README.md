@@ -16,6 +16,8 @@ Android のビルドログ（Gradle ログ等）を解析し、エラー・警�
 |---|:---:|---|---|
 | `log-file-path` | **はい** | - | 解析対象の Android ビルドログファイルパス |
 | `report-path` | いいえ | `""` | 解析レポート（Markdown）を保存するファイルパス（任意） |
+| `enable-summary` | いいえ | `'true'` | GitHub Actions の Job Summary（`$GITHUB_STEP_SUMMARY`）へのレポート出力を有効化 |
+| `emit-annotations` | いいえ | `'true'` | GitHub Actions アノテーション（`::error::`, `::warning::`）の出力を有効化 |
 
 ## Outputs
 

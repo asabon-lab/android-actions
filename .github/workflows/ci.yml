@@ -116,6 +116,7 @@ jobs:
         with:
           log-file-path: 'build/dummy_build.log'
           report-path: 'build/dummy_report.md'
+          enable-summary: 'false'
 
       - name: Verify analyze-build-log output
         run: |
@@ -125,6 +126,10 @@ jobs:
           fi
           if [ "${{ steps.test_analyzer.outputs.error-count }}" != "0" ]; then
             echo "::error::Expected error-count 0, got ${{ steps.test_analyzer.outputs.error-count }}"
+            exit 1
+          fi
+          if [ -n "$GITHUB_STEP_SUMMARY" ] && [ -f "$GITHUB_STEP_SUMMARY" ] && grep -q "Android Build Log Analysis" "$GITHUB_STEP_SUMMARY"; then
+            echo "::error::Step summary was unexpectedly appended despite enable-summary: false!"
             exit 1
           fi
           echo "analyze-build-log verified successfully!"

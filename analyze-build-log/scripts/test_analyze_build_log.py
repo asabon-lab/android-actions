@@ -223,6 +223,58 @@ class TestCLIExecution(unittest.TestCase):
                     main()
                 self.assertEqual(cm.exception.code, 1)
 
+    def test_cli_disable_summary(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_file = os.path.join(tmpdir, "build.log")
+            summary_file = os.path.join(tmpdir, "summary.md")
+            with open(log_file, "w", encoding="utf-8") as f:
+                f.write("> Task :app:assembleDebug UP-TO-DATE\nBUILD SUCCESSFUL in 5s\n")
+
+            with (
+                patch.dict(os.environ, {"GITHUB_STEP_SUMMARY": summary_file}),
+                patch("sys.stdout"),
+                patch("sys.stderr"),
+                patch(
+                    "sys.argv",
+                    [
+                        "analyze_build_log.py",
+                        "--log-file-path",
+                        log_file,
+                        "--disable-summary",
+                    ],
+                ),
+            ):
+                main()
+
+            # summary_file should not have been created or written to
+            self.assertFalse(os.path.exists(summary_file))
+
+    def test_cli_disable_annotations(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_file = os.path.join(tmpdir, "build.log")
+            with open(log_file, "w", encoding="utf-8") as f:
+                f.write("e: /path/Main.kt: (1,1): Compilation error\nBUILD FAILED in 3s\n")
+
+            fake_stdout = io.StringIO()
+            with (
+                patch("sys.stdout", fake_stdout),
+                patch("sys.stderr"),
+                patch(
+                    "sys.argv",
+                    [
+                        "analyze_build_log.py",
+                        "--log-file-path",
+                        log_file,
+                        "--disable-annotations",
+                    ],
+                ),
+            ):
+                with self.assertRaises(SystemExit):
+                    main()
+
+            output = fake_stdout.getvalue()
+            self.assertNotIn("::error", output)
+
 
 if __name__ == "__main__":
     unittest.main()
