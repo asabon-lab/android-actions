@@ -1,6 +1,6 @@
 # Issue #008: publish-release に Job Summary 出力機能を追加（折りたたみ式リリースノート対応）
 
-- **ステータス**: 進行中
+- **ステータス**: 完了
 - **作成日**: 2026-10-08
 - **対象ブランチ**: `feature/008-add-job-summary-to-publish-release`
 
@@ -15,15 +15,15 @@
 
 ## 📋 要件 / 受け入れ基準 (Acceptance Criteria)
 
-- [ ] `GITHUB_STEP_SUMMARY` 環境変数が存在する場合に Job Summary へ Markdown を出力すること
-- [ ] 見出しレベルが `###` から開始され、サードパーティ製 Action と統一感があること
-- [ ] 確定情報テーブルを出力すること:
+- [x] `GITHUB_STEP_SUMMARY` 環境変数が存在する場合に Job Summary へ Markdown を出力すること
+- [x] 見出しレベルが `###` から開始され、サードパーティ製 Action と統一感があること
+- [x] 確定情報テーブルを出力すること:
   - リリースタイトルおよびリンク（`[Title](URL)`）
   - タグ名（`Tag`）
   - リリース種別（Full Release / Pre-release / Draft、Latest Release 表示）
-- [ ] アップロードされた成果物（Assets）の一覧およびファイル数を出力すること
-- [ ] リリースノート（Release Body）が存在する場合、`<details><summary><b>📝 Release Notes (クリックで展開)</b></summary> ... </details>` の折りたたみ形式で出力すること
-- [ ] 各 Action の README.md （`publish-release/README.md`）に本機能の記述を追加すること
+- [x] アップロードされた成果物（Assets）の一覧およびファイル数を出力すること
+- [x] リリースノート（Release Body）が存在する場合、`<details><summary><b>📝 Release Notes (クリックで展開)</b></summary> ... </details>` の折りたたみ形式で出力すること
+- [x] 各 Action の README.md （`publish-release/README.md`）に本機能の記述を追加すること
 
 ---
 
@@ -37,7 +37,7 @@
 
 ## ✅ 完了チェックリスト
 
-- [ ] 受け入れ基準を満たす実装・更新
-- [ ] Action 構文の確認
-- [ ] 各 Action の README.md およびドキュメントの更新
-- [ ] ローカル検証・CI（GitHub Actions）の通過
+- [x] 受け入れ基準を満たす実装・更新
+- [x] Action 構文の確認
+- [x] 各 Action の README.md およびドキュメントの更新
+- [x] ローカル検証・CI（GitHub Actions）の通過
