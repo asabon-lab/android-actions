@@ -1,6 +1,6 @@
 # Issue #007: analyze-build-log の出力見出しレベルを一段下げる
 
-- **ステータス**: 進行中
+- **ステータス**: 完了
 - **作成日**: 2026-10-08
 - **対象ブランチ**: `refactor/007-adjust-build-log-heading-levels`
 
@@ -14,13 +14,13 @@
 
 ## 📋 要件 / 受け入れ基準 (Acceptance Criteria)
 
-- [ ] `analyze-build-log/scripts/analyze_build_log.py` で出力される Markdown レポートの各見出しレベルが一段下げられていること
+- [x] `analyze-build-log/scripts/analyze_build_log.py` で出力される Markdown レポートの各見出しレベルが一段下げられていること
   - トップ見出し: `## Android Build Log Analysis` → `### Android Build Log Analysis`
   - 各セクション見出し: `### Build Performance Summary` → `#### Build Performance Summary`
   - エラー・警告解析: `### Error and Warning Analysis` → `#### Error and Warning Analysis`
   - 既知の警告セクション: `### Known Warnings / Ignorable Warnings` → `#### Known Warnings / Ignorable Warnings`
-- [ ] 単体テスト（`test_analyze_build_log.py`）が更新され、すべてのテストがパスすること
-- [ ] 既存の機能（アノテーション出力、エラー検出、終了コード等）に影響を与えないこと
+- [x] 単体テスト（`test_analyze_build_log.py`）が更新され、すべてのテストがパスすること
+- [x] 既存の機能（アノテーション出力、エラー検出、終了コード等）に影響を与えないこと
 
 ---
 
@@ -34,8 +34,8 @@
 
 ## ✅ 完了チェックリスト
 
-- [ ] 受け入れ基準を満たす実装・更新
-- [ ] 単体テスト（test_*.py）の作成または更新
-- [ ] Action / ワークフロー構文の確認
-- [ ] ローカルテスト・CI（GitHub Actions）の通過
-- [ ] 各 Action の README.md およびルート README.md の更新（該当する場合）
+- [x] 受け入れ基準を満たす実装・更新
+- [x] 単体テスト（test_*.py）の作成または更新
+- [x] Action / ワークフロー構文の確認
+- [x] ローカルテスト・CI（GitHub Actions）の通過
+- [x] 各 Action の README.md およびルート README.md の更新（該当する場合）
