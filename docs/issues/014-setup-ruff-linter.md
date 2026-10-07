@@ -22,6 +22,7 @@ Python コードの品質・スタイルの一貫性を担保し、コードベ�
 - [x] ドキュメント（`docs/TESTING.md`, `AGENTS.md`）に Ruff による静的解析コマンドの説明を追記すること
 - [x] 単体テスト実行時の GitHub Workflow Commands（`::error`）の漏洩を防止し、偽陽性のアノテーションを排除すること
 - [x] `analyze-build-log` に `enable-summary` および `emit-annotations` オプションを追加し、CI テスト時の不要な Step Summary 出力を抑制すること
+- [x] `.github/release-drafter.yml` の非推奨構文（`categories[*].labels`）を新構文（`when: labels:`）へ移行し、警告アノテーションを解消すること
 
 ---
 

@@ -43,25 +43,30 @@ category-template: |
 
 categories:
   - title: '🚀 新機能 / Features'
-    labels:
-      - 'feature'
-      - 'enhancement'
+    when:
+      labels:
+        - 'feature'
+        - 'enhancement'
   - title: '🐛 バグ修正 / Bug Fixes'
-    labels:
-      - 'fix'
-      - 'bug'
+    when:
+      labels:
+        - 'fix'
+        - 'bug'
   - title: '🛠️ リファクタリング / Refactoring'
-    labels:
-      - 'refactor'
+    when:
+      labels:
+        - 'refactor'
   - title: '📝 ドキュメント / Documentation'
-    labels:
-      - 'docs'
-      - 'documentation'
+    when:
+      labels:
+        - 'docs'
+        - 'documentation'
   - title: '📦 保守・ビルド・CI / Maintenance & Chore'
-    labels:
-      - 'chore'
-      - 'test'
-      - 'dependencies'
+    when:
+      labels:
+        - 'chore'
+        - 'test'
+        - 'dependencies'
 
 change-template: '- $TITLE (#$NUMBER) by @$AUTHOR'
 
