@@ -6,7 +6,7 @@ import os
 import subprocess
 import tempfile
 import unittest
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import patch
 
 from publish_release import GitHubReleaseManager, main
 
@@ -63,18 +63,20 @@ class TestGitHubReleaseManager(unittest.TestCase):
         # find_existing_draft returns draft id
         mock_run_gh.side_effect = [
             subprocess.CompletedProcess(args=[], returncode=0, stdout="11223\n"),  # find draft
-            subprocess.CompletedProcess(args=[], returncode=0, stdout=""),          # api PATCH
-            subprocess.CompletedProcess(                                            # release view
+            subprocess.CompletedProcess(args=[], returncode=0, stdout=""),  # api PATCH
+            subprocess.CompletedProcess(  # release view
                 args=[],
                 returncode=0,
-                stdout=json.dumps({
-                    "id": 11223,
-                    "url": "https://github.com/asabon-lab/android-actions/releases/tag/v1.0.0",
-                    "tagName": "v1.0.0",
-                    "name": "v1.0.0",
-                    "body": "Release notes",
-                    "assets": [],
-                }),
+                stdout=json.dumps(
+                    {
+                        "id": 11223,
+                        "url": "https://github.com/asabon-lab/android-actions/releases/tag/v1.0.0",
+                        "tagName": "v1.0.0",
+                        "name": "v1.0.0",
+                        "body": "Release notes",
+                        "assets": [],
+                    }
+                ),
             ),
         ]
 
@@ -98,16 +100,18 @@ class TestGitHubReleaseManager(unittest.TestCase):
     def test_publish_update_existing_release(self, mock_run_gh):
         # No draft, existing release found
         mock_run_gh.side_effect = [
-            subprocess.CompletedProcess(args=[], returncode=0, stdout=""),          # find draft (none)
-            subprocess.CompletedProcess(args=[], returncode=0, stdout=""),          # release view exists
-            subprocess.CompletedProcess(args=[], returncode=0, stdout=""),          # release edit
-            subprocess.CompletedProcess(                                            # release view json
+            subprocess.CompletedProcess(args=[], returncode=0, stdout=""),  # find draft (none)
+            subprocess.CompletedProcess(args=[], returncode=0, stdout=""),  # release view exists
+            subprocess.CompletedProcess(args=[], returncode=0, stdout=""),  # release edit
+            subprocess.CompletedProcess(  # release view json
                 args=[],
                 returncode=0,
-                stdout=json.dumps({
-                    "id": 5566,
-                    "url": "https://github.com/asabon-lab/android-actions/releases/tag/v1.0.0",
-                }),
+                stdout=json.dumps(
+                    {
+                        "id": 5566,
+                        "url": "https://github.com/asabon-lab/android-actions/releases/tag/v1.0.0",
+                    }
+                ),
             ),
         ]
 
@@ -129,16 +133,20 @@ class TestGitHubReleaseManager(unittest.TestCase):
     def test_publish_create_new_release(self, mock_run_gh):
         # No draft, release does not exist
         mock_run_gh.side_effect = [
-            subprocess.CompletedProcess(args=[], returncode=0, stdout=""),          # find draft (none)
-            subprocess.CompletedProcess(args=[], returncode=1, stdout="not found"), # release view (404)
-            subprocess.CompletedProcess(args=[], returncode=0, stdout=""),          # release create
-            subprocess.CompletedProcess(                                            # release view json
+            subprocess.CompletedProcess(args=[], returncode=0, stdout=""),  # find draft (none)
+            subprocess.CompletedProcess(
+                args=[], returncode=1, stdout="not found"
+            ),  # release view (404)
+            subprocess.CompletedProcess(args=[], returncode=0, stdout=""),  # release create
+            subprocess.CompletedProcess(  # release view json
                 args=[],
                 returncode=0,
-                stdout=json.dumps({
-                    "id": 7788,
-                    "url": "https://github.com/asabon-lab/android-actions/releases/tag/v2.0.0",
-                }),
+                stdout=json.dumps(
+                    {
+                        "id": 7788,
+                        "url": "https://github.com/asabon-lab/android-actions/releases/tag/v2.0.0",
+                    }
+                ),
             ),
         ]
 
@@ -169,16 +177,20 @@ class TestGitHubReleaseManager(unittest.TestCase):
 
             mock_run_gh.side_effect = [
                 subprocess.CompletedProcess(args=[], returncode=0, stdout=""),  # find draft
-                subprocess.CompletedProcess(args=[], returncode=1, stdout=""),  # release exists (no)
+                subprocess.CompletedProcess(
+                    args=[], returncode=1, stdout=""
+                ),  # release exists (no)
                 subprocess.CompletedProcess(args=[], returncode=0, stdout=""),  # release create
                 subprocess.CompletedProcess(args=[], returncode=0, stdout=""),  # release upload
-                subprocess.CompletedProcess(                                    # release view
+                subprocess.CompletedProcess(  # release view
                     args=[],
                     returncode=0,
-                    stdout=json.dumps({
-                        "id": 9900,
-                        "url": "https://github.com/asabon-lab/android-actions/releases/tag/v1.0.0",
-                    }),
+                    stdout=json.dumps(
+                        {
+                            "id": 9900,
+                            "url": "https://github.com/asabon-lab/android-actions/releases/tag/v1.0.0",
+                        }
+                    ),
                 ),
             ]
 
@@ -213,7 +225,10 @@ class TestGitHubReleaseManager(unittest.TestCase):
         )
 
         self.assertIn("### 🚀 GitHub Release Published", md)
-        self.assertIn("| **Release** | [Version 1.2.0](https://github.com/asabon-lab/android-actions/releases/tag/v1.2.0) |", md)
+        self.assertIn(
+            "| **Release** | [Version 1.2.0](https://github.com/asabon-lab/android-actions/releases/tag/v1.2.0) |",
+            md,
+        )
         self.assertIn("| **Tag** | `v1.2.0` |", md)
         self.assertIn("| **Release Type** | Full Release (Latest) |", md)
         self.assertIn("#### Uploaded Assets (2 files)", md)
@@ -241,16 +256,21 @@ class TestCLIMain(unittest.TestCase):
             out_file = os.path.join(tmpdir, "github_output.txt")
             sum_file = os.path.join(tmpdir, "step_summary.md")
 
-            with patch.dict(os.environ, {"GITHUB_OUTPUT": out_file, "GITHUB_STEP_SUMMARY": sum_file}):
+            with patch.dict(
+                os.environ, {"GITHUB_OUTPUT": out_file, "GITHUB_STEP_SUMMARY": sum_file}
+            ):
                 with patch("sys.argv", ["publish_release.py", "--tag-name", "v1.0.0"]):
                     main()
 
-            with open(out_file, "r", encoding="utf-8") as f:
+            with open(out_file, encoding="utf-8") as f:
                 content = f.read()
-                self.assertIn("release_url=https://github.com/asabon-lab/android-actions/releases/tag/v1.0.0", content)
+                self.assertIn(
+                    "release_url=https://github.com/asabon-lab/android-actions/releases/tag/v1.0.0",
+                    content,
+                )
                 self.assertIn("release_id=12345", content)
 
-            with open(sum_file, "r", encoding="utf-8") as f:
+            with open(sum_file, encoding="utf-8") as f:
                 self.assertEqual(f.read(), "### Summary\n")
 
 

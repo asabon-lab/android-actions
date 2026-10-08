@@ -12,7 +12,7 @@ import json
 import os
 import subprocess
 import sys
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
@@ -39,12 +39,12 @@ def append_github_step_summary(content: str) -> None:
 class GitHubReleaseManager:
     """Manages publishing and updating GitHub releases using GitHub CLI."""
 
-    def __init__(self, repository: Optional[str] = None):
+    def __init__(self, repository: str | None = None):
         self.repository = repository or os.environ.get("GITHUB_REPOSITORY", "")
 
     def run_gh(
         self,
-        args: List[str],
+        args: list[str],
         check: bool = True,
         capture_output: bool = True,
     ) -> subprocess.CompletedProcess:
@@ -64,15 +64,13 @@ class GitHubReleaseManager:
                 print(f"[ERROR] Command '{' '.join(cmd)}' failed: {e.stderr}", file=sys.stderr)
             raise
 
-    def resolve_make_latest(
-        self, make_latest: str, prerelease: bool, draft: bool
-    ) -> str:
+    def resolve_make_latest(self, make_latest: str, prerelease: bool, draft: bool) -> str:
         """Determines the effective make-latest value."""
         if make_latest == "auto":
             return "true" if (not prerelease and not draft) else "false"
         return make_latest
 
-    def find_existing_draft(self) -> Optional[str]:
+    def find_existing_draft(self) -> str | None:
         """Finds the first existing draft release ID in repository."""
         repo_prefix = f"repos/{self.repository}/releases" if self.repository else "releases"
         try:
@@ -102,15 +100,13 @@ class GitHubReleaseManager:
         generate_notes: bool = True,
         update_existing_draft: bool = True,
         artifacts_pattern: str = "",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Publishes or updates the release and uploads artifacts."""
         resolved_latest = self.resolve_make_latest(make_latest, prerelease, draft)
 
         print(f"[INFO] Target Release: {tag_name}")
         print(f"[INFO] Title: {title}")
-        print(
-            f"[INFO] Pre-release: {prerelease} | Draft: {draft} | Make Latest: {resolved_latest}"
-        )
+        print(f"[INFO] Pre-release: {prerelease} | Draft: {draft} | Make Latest: {resolved_latest}")
 
         draft_id = None
         if update_existing_draft:
@@ -180,7 +176,6 @@ class GitHubReleaseManager:
             self.run_gh(create_args)
 
         # Upload artifacts if provided
-        uploaded_files: List[str] = []
         if artifacts_pattern:
             print(f"[INFO] Uploading release artifacts matching '{artifacts_pattern}'...")
             files = sorted(glob.glob(artifacts_pattern))
@@ -189,13 +184,12 @@ class GitHubReleaseManager:
             else:
                 print(f"[INFO] Uploading {len(files)} file(s): {', '.join(files)}")
                 self.run_gh(["release", "upload", tag_name] + files + ["--clobber"])
-                uploaded_files = files
 
         # Fetch release details
         release_info = self.get_release_info(tag_name)
         return release_info
 
-    def get_release_info(self, tag_name: str) -> Dict[str, Any]:
+    def get_release_info(self, tag_name: str) -> dict[str, Any]:
         """Fetches release info JSON using gh release view."""
         try:
             res = self.run_gh(
@@ -218,7 +212,7 @@ class GitHubReleaseManager:
         self,
         tag_name: str,
         title: str,
-        release_info: Dict[str, Any],
+        release_info: dict[str, Any],
         prerelease: bool,
         draft: bool,
         resolved_latest: str,
@@ -333,9 +327,7 @@ def main() -> None:
     append_github_output("release_id", release_id)
 
     # Step Summary
-    resolved_latest = manager.resolve_make_latest(
-        args.make_latest, args.prerelease, args.draft
-    )
+    resolved_latest = manager.resolve_make_latest(args.make_latest, args.prerelease, args.draft)
     summary_md = manager.build_summary_markdown(
         tag_name=args.tag_name,
         title=title,

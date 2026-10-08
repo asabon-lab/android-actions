@@ -125,7 +125,6 @@ class TestBuildLogAnalyzer(unittest.TestCase):
         self.assertIn("  - SKIPPED: 1", report)
 
     def test_many_error_lines_abbreviation(self):
-        lines = [f"Error: Common error on line {i}" for i in range(10)]
         # Map with same message
         lines_same = ["Error: Identical error"] * 10
         analyzer = BuildLogAnalyzer("\n".join(lines_same))
@@ -133,9 +132,34 @@ class TestBuildLogAnalyzer(unittest.TestCase):
         self.assertTrue(is_failed)
         self.assertIn("... and 7 others", report)
 
+    def test_emit_annotations_captured(self):
+        lines = [
+            "e: /path/Main.kt: (1,1): Compilation error",
+            "w: /path/Warning.kt: (2,2): Deprecation warning",
+        ]
+        analyzer = BuildLogAnalyzer("\n".join(lines))
+        fake_stdout = io.StringIO()
+        with patch("sys.stdout", fake_stdout):
+            report, is_failed, _ = analyzer.generate_report(emit_annotations=True)
+
+        self.assertTrue(is_failed)
+        output = fake_stdout.getvalue()
+        self.assertIn("::error title=Line 1::e: /path/Main.kt: (1,1): Compilation error", output)
+        self.assertIn(
+            "::warning title=Line 2::w: /path/Warning.kt: (2,2): Deprecation warning", output
+        )
+
 
 class TestCLIExecution(unittest.TestCase):
     """Test CLI commands and argument handling."""
+
+    def setUp(self):
+        # Isolate all tests from real GitHub Actions environment variables
+        self.env_patcher = patch.dict(os.environ, {"GITHUB_STEP_SUMMARY": "", "GITHUB_OUTPUT": ""})
+        self.env_patcher.start()
+
+    def tearDown(self):
+        self.env_patcher.stop()
 
     def test_cli_success_with_report_file(self):
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -147,28 +171,47 @@ class TestCLIExecution(unittest.TestCase):
             with open(log_file, "w", encoding="utf-8") as f:
                 f.write("> Task :app:assembleDebug UP-TO-DATE\nBUILD SUCCESSFUL in 5s\n")
 
-            with patch.dict(os.environ, {"GITHUB_STEP_SUMMARY": summary_file, "GITHUB_OUTPUT": output_file}):
-                with patch("sys.argv", ["analyze_build_log.py", "--log-file-path", log_file, "--report-path", report_file]):
-                    main()
+            with (
+                patch.dict(
+                    os.environ, {"GITHUB_STEP_SUMMARY": summary_file, "GITHUB_OUTPUT": output_file}
+                ),
+                patch("sys.stdout"),
+                patch("sys.stderr"),
+                patch(
+                    "sys.argv",
+                    [
+                        "analyze_build_log.py",
+                        "--log-file-path",
+                        log_file,
+                        "--report-path",
+                        report_file,
+                    ],
+                ),
+            ):
+                main()
 
             self.assertTrue(os.path.exists(report_file))
-            with open(report_file, "r", encoding="utf-8") as f:
+            with open(report_file, encoding="utf-8") as f:
                 content = f.read()
                 self.assertIn("Build Performance Summary", content)
 
             self.assertTrue(os.path.exists(summary_file))
-            with open(summary_file, "r", encoding="utf-8") as f:
+            with open(summary_file, encoding="utf-8") as f:
                 self.assertIn("Build Performance Summary", f.read())
 
             self.assertTrue(os.path.exists(output_file))
-            with open(output_file, "r", encoding="utf-8") as f:
+            with open(output_file, encoding="utf-8") as f:
                 output_content = f.read()
                 self.assertIn(f"report-path={report_file}", output_content)
                 self.assertIn("error-count=0", output_content)
                 self.assertIn("warning-count=0", output_content)
 
     def test_cli_error_file_not_found(self):
-        with patch("sys.argv", ["analyze_build_log.py", "--log-file-path", "non_existent_file.log"]):
+        with (
+            patch("sys.stdout"),
+            patch("sys.stderr"),
+            patch("sys.argv", ["analyze_build_log.py", "--log-file-path", "non_existent_file.log"]),
+        ):
             with self.assertRaises(SystemExit) as cm:
                 main()
             self.assertEqual(cm.exception.code, 1)
@@ -179,10 +222,66 @@ class TestCLIExecution(unittest.TestCase):
             with open(log_file, "w", encoding="utf-8") as f:
                 f.write("e: /path/Main.kt: (1,1): Compilation error\nBUILD FAILED in 3s\n")
 
-            with patch("sys.argv", ["analyze_build_log.py", "--log-file-path", log_file]):
+            with (
+                patch("sys.stdout"),
+                patch("sys.stderr"),
+                patch("sys.argv", ["analyze_build_log.py", "--log-file-path", log_file]),
+            ):
                 with self.assertRaises(SystemExit) as cm:
                     main()
                 self.assertEqual(cm.exception.code, 1)
+
+    def test_cli_disable_summary(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_file = os.path.join(tmpdir, "build.log")
+            summary_file = os.path.join(tmpdir, "summary.md")
+            with open(log_file, "w", encoding="utf-8") as f:
+                f.write("> Task :app:assembleDebug UP-TO-DATE\nBUILD SUCCESSFUL in 5s\n")
+
+            with (
+                patch.dict(os.environ, {"GITHUB_STEP_SUMMARY": summary_file}),
+                patch("sys.stdout"),
+                patch("sys.stderr"),
+                patch(
+                    "sys.argv",
+                    [
+                        "analyze_build_log.py",
+                        "--log-file-path",
+                        log_file,
+                        "--disable-summary",
+                    ],
+                ),
+            ):
+                main()
+
+            # summary_file should not have been created or written to
+            self.assertFalse(os.path.exists(summary_file))
+
+    def test_cli_disable_annotations(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_file = os.path.join(tmpdir, "build.log")
+            with open(log_file, "w", encoding="utf-8") as f:
+                f.write("e: /path/Main.kt: (1,1): Compilation error\nBUILD FAILED in 3s\n")
+
+            fake_stdout = io.StringIO()
+            with (
+                patch("sys.stdout", fake_stdout),
+                patch("sys.stderr"),
+                patch(
+                    "sys.argv",
+                    [
+                        "analyze_build_log.py",
+                        "--log-file-path",
+                        log_file,
+                        "--disable-annotations",
+                    ],
+                ),
+            ):
+                with self.assertRaises(SystemExit):
+                    main()
+
+            output = fake_stdout.getvalue()
+            self.assertNotIn("::error", output)
 
 
 if __name__ == "__main__":

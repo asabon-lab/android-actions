@@ -32,6 +32,7 @@
 - **依存関係の最小化**: 必要最小限の公式クライアント（`google-api-python-client`, `google-auth` 等）のみを使用する。
 - **クロスプラットフォーム配慮**: Windows 環境（cp932）での `UnicodeEncodeError` を防ぐため、コンソール出力には装飾絵文字ではなくプレーンなテキストプレフィックス（`[INFO]`, `[SUCCESS]`, `[GUARD]` など）を使用し、`sys.stdout.reconfigure(encoding="utf-8")` を配慮する。
 - **単体テストの必須化**: スクリプトのロジック（引数パース、ガード条件、dry-run、API 呼び出し）は、外部 API をモックした単体テスト（`test_*.py`）を必ず作成し、`python -m unittest` で全件パスすることを保証する。
+- **静的解析 & コードフォーマット (`ruff`)**: Python コードは `ruff check .` および `ruff format --check .` による品質検査を実施し、警告・エラーゼロを維持する。
 - **パッケージ & 仮想環境管理 (`uv`)**: ルートの `pyproject.toml` および `uv.lock` により、`uv run python -m unittest ...` で高速かつ決定論的に仮想環境構築・テスト実行を行えるようにする（詳細は [`docs/TESTING.md`](docs/TESTING.md) を参照）。
 
 ### CI（GitHub Actions）との連携
@@ -42,13 +43,18 @@
 ### GitHub Actions CI & 警告（Warnings/Annotations）監視ルール
 GitHub Actions による CI 実行結果を確認する際は、単にジョブの「成功・失敗（Success / Failure）」を見るだけでなく、**警告（Annotations, Deprecation Warnings, Runner Notices）の有無を必ず確認し、迅速に対応・解消する**こと。
 
-1. **警告の確認方法**:
-   - `gh pr checks` や `gh run view <RUN_ID>` の出力において、`ANNOTATIONS` や `Warning:`、非推奨メッセージの有無を確認する（`.agents/skills/check-ci/` の活用）。
-2. **対象となる警告の例**:
+1. **全ワークフロー（Run）網羅点検の義務化（見落とし防止）**:
+   - プルリクエスト作成時や push 時には、複数の独立したワークフロー（例: `CI` と `Release Drafter`）が同時に実行される。
+   - **特定のメインワークフロー（`CI` 等）のみを点検し、他のワークフロー（`Release Drafter` 等）について成否判定（`pass`）だけで確認を済ませる行為は厳禁**とする。
+   - `gh pr checks` に表示されたすべてのワークフロー／ジョブについて、関連する各 Run ID に対し個別に `gh run view <RUN_ID>` を実行して `ANNOTATIONS` の有無を必ず点検すること。
+2. **警告の確認方法**:
+   - `gh pr checks` や `gh run list --branch <ブランチ名>` で実行された全ワークフローを特定し、各 Run ごとに `gh run view <RUN_ID>` の出力で `ANNOTATIONS` や `Warning:`、非推奨メッセージの有無を確認する（`.agents/skills/check-ci/` の活用）。
+3. **対象となる警告の例**:
+   - Action・ツールの設定や構文の非推奨警告（例: `Release Drafter` の `categories[*].labels` 非推奨、`setup-uv` のタグ指定不備など）。
    - ランタイムや Action の非推奨警告（例: `Node.js 20 is deprecated... forced to run on Node.js 24`, `actions/checkout` や `setup-python` 等の最新バージョンへのアップグレード）。
    - パッケージやツールの非推奨警告、依存関係の脆弱性通知。
    - OS ランナー環境の移行予告（例: Ubuntu runner バージョン更新）。
-3. **対応指針**:
+4. **対応指針**:
    - 非推奨（Deprecation）や設定不備による警告は放置せず、速やかに修正コミットを作成して解消する。
    - プラットフォーム全体の移行予告についても、影響有無を調査してユーザーに報告・提案する。
 
@@ -129,6 +135,11 @@ GitHub Actions による CI 実行結果を確認する際は、単にジョブ�
 ```bash
 # Git Hooks の有効化
 git config core.hooksPath .githooks
+
+# Python 静的解析・フォーマット (Ruff)
+uv run ruff check .
+uv run ruff check --fix .
+uv run ruff format --check .
 
 # Python 単体テストの実行 (uv 推奨)
 uv run python -m unittest discover -s promote-play/scripts -p "test_*.py"

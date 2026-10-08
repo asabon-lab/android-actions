@@ -10,7 +10,6 @@ import argparse
 import os
 import re
 import sys
-from typing import Dict, List, Optional, Tuple
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
@@ -25,9 +24,7 @@ class BuildLogAnalyzer:
     BUILD_RESULT_REGEX = re.compile(r"BUILD (SUCCESSFUL|FAILED) in (.*)")
     ERROR_REGEX = re.compile(r"^(\s*(Error|error):|^e:)")
     WARNING_REGEX = re.compile(r"^(\s*(Warning|warning):|^w:)")
-    DEPRECATION_KEYWORD = (
-        "Using a Project object as a dependency notation has been deprecated"
-    )
+    DEPRECATION_KEYWORD = "Using a Project object as a dependency notation has been deprecated"
 
     def __init__(self, log_content: str):
         self.lines = log_content.splitlines()
@@ -36,7 +33,7 @@ class BuildLogAnalyzer:
 
     def analyze_performance(self) -> str:
         """Extracts task execution and build duration stats."""
-        tasks: List[Tuple[str, str]] = []
+        tasks: list[tuple[str, str]] = []
         total_time = "Unknown"
 
         for line in self.lines:
@@ -64,15 +61,13 @@ class BuildLogAnalyzer:
         markdown += f"  - SKIPPED: {skipped}\n\n"
         return markdown
 
-    def analyze_errors_and_warnings(
-        self, emit_annotations: bool = True
-    ) -> Tuple[str, int, int]:
+    def analyze_errors_and_warnings(self, emit_annotations: bool = True) -> tuple[str, int, int]:
         """Detects errors, warnings, and known deprecation warnings.
 
         Returns (markdown_report, error_count, warning_count).
         """
-        issues_map: Dict[str, Dict] = {}
-        known_warnings: List[Dict] = []
+        issues_map: dict[str, dict] = {}
+        known_warnings: list[dict] = []
         error_count = 0
         warning_count = 0
 
@@ -103,15 +98,17 @@ class BuildLogAnalyzer:
                 if existing:
                     existing["lines"].append(line_num)
                 else:
-                    known_warnings.append({
-                        "message": line.strip(),
-                        "lines": [line_num],
-                        "cause": cause,
-                    })
+                    known_warnings.append(
+                        {
+                            "message": line.strip(),
+                            "lines": [line_num],
+                            "cause": cause,
+                        }
+                    )
                 continue
 
             # Check standard error and warning patterns
-            issue_type: Optional[str] = None
+            issue_type: str | None = None
             if self.ERROR_REGEX.search(line):
                 issue_type = "Error"
             elif self.WARNING_REGEX.search(line):
@@ -156,9 +153,7 @@ class BuildLogAnalyzer:
                 safe_message = issue["message"].replace("|", "\\|")
                 lines_list = issue["lines"]
                 if len(lines_list) > 5:
-                    line_str = (
-                        f"{', '.join(map(str, lines_list[:3]))} ... and {len(lines_list) - 3} others"
-                    )
+                    line_str = f"{', '.join(map(str, lines_list[:3]))} ... and {len(lines_list) - 3} others"
                 else:
                     line_str = ", ".join(map(str, lines_list))
 
@@ -175,13 +170,13 @@ class BuildLogAnalyzer:
                 elif cause == "com.android.build.gradle":
                     cause_desc = "`Android Gradle Plugin`"
                 else:
-                    cause_desc = "`kotlinx-kover` または `Android Gradle Plugin` などの外部プラグイン"
+                    cause_desc = (
+                        "`kotlinx-kover` または `Android Gradle Plugin` などの外部プラグイン"
+                    )
 
                 lines_list = kw["lines"]
                 if len(lines_list) > 5:
-                    line_str = (
-                        f"{', '.join(map(str, lines_list[:3]))} ... and {len(lines_list) - 3} others"
-                    )
+                    line_str = f"{', '.join(map(str, lines_list[:3]))} ... and {len(lines_list) - 3} others"
                 else:
                     line_str = ", ".join(map(str, lines_list))
 
@@ -195,23 +190,17 @@ class BuildLogAnalyzer:
         self.warning_count = warning_count
         return markdown, error_count, warning_count
 
-    def generate_report(
-        self, emit_annotations: bool = True
-    ) -> Tuple[str, bool, str]:
+    def generate_report(self, emit_annotations: bool = True) -> tuple[str, bool, str]:
         """Generates full Markdown report and returns (report, is_failed, failure_message)."""
         perf_md = self.analyze_performance()
-        err_md, error_count, _ = self.analyze_errors_and_warnings(
-            emit_annotations=emit_annotations
-        )
+        err_md, error_count, _ = self.analyze_errors_and_warnings(emit_annotations=emit_annotations)
 
         full_report = "### Android Build Log Analysis\n\n"
         full_report += perf_md
         full_report += err_md
 
         is_failed = error_count > 0
-        failure_msg = (
-            f"Found {error_count} errors in the build log." if is_failed else ""
-        )
+        failure_msg = f"Found {error_count} errors in the build log." if is_failed else ""
         return full_report, is_failed, failure_msg
 
 
@@ -229,6 +218,16 @@ def main() -> None:
         default="",
         help="Path to save the analysis report in Markdown format",
     )
+    parser.add_argument(
+        "--disable-summary",
+        action="store_true",
+        help="Disable output to GitHub Step Summary",
+    )
+    parser.add_argument(
+        "--disable-annotations",
+        action="store_true",
+        help="Disable emitting GitHub workflow command annotations (::error, ::warning)",
+    )
     args = parser.parse_args()
 
     if not os.path.exists(args.log_file_path):
@@ -237,15 +236,17 @@ def main() -> None:
 
     print(f"[INFO] Analyzing build log file at: {args.log_file_path}")
 
-    with open(args.log_file_path, "r", encoding="utf-8", errors="replace") as f:
+    with open(args.log_file_path, encoding="utf-8", errors="replace") as f:
         log_content = f.read()
 
     analyzer = BuildLogAnalyzer(log_content)
-    report, is_failed, failure_msg = analyzer.generate_report(emit_annotations=True)
+    report, is_failed, failure_msg = analyzer.generate_report(
+        emit_annotations=not args.disable_annotations
+    )
 
     # Output to GitHub Step Summary if available
     summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
-    if summary_path:
+    if not args.disable_summary and summary_path:
         try:
             with open(summary_path, "a", encoding="utf-8") as f:
                 f.write(report + "\n")

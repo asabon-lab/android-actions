@@ -48,7 +48,33 @@ uv run python -m unittest discover -s publish-release/scripts -p "test_*.py"
 
 ---
 
-## 3. 標準 Python (`venv` / `pip`) で実行する場合
+## 3. 静的解析 & フォーマットチェック (`ruff`)
+
+コード品質とスタイルの一貫性を維持するため、Linter / Formatter として **[Ruff](https://docs.astral.sh/ruff/)** を導入しています。
+
+### Lint チェックの実行
+
+```bash
+# 静的解析（Lint チェック）
+uv run ruff check .
+
+# 自動修正が可能な警告・エラーを一括修正
+uv run ruff check --fix .
+```
+
+### フォーマットチェックの実行
+
+```bash
+# フォーマットチェック（差分確認のみ）
+uv run ruff format --check .
+
+# 自動フォーマット適用
+uv run ruff format .
+```
+
+---
+
+## 4. 標準 Python (`venv` / `pip`) で実行する場合
 
 `uv` を使用せず、標準の Python 仮想環境で実行する場合の手順です。
 
@@ -72,7 +98,7 @@ python -m unittest discover -s publish-release/scripts -p "test_*.py"
 
 ---
 
-## 4. テスト設計方針とモック
+## 5. テスト設計方針とモック
 
 各 Action の単体テストは以下の設計方針に従っています：
 
@@ -86,11 +112,12 @@ python -m unittest discover -s publish-release/scripts -p "test_*.py"
 
 ---
 
-## 5. CI（GitHub Actions）との連携
+## 6. CI（GitHub Actions）との連携
 
 Pull Request 作成時および `main` ブランチ push 時に、[`.github/workflows/ci.yml`](../.github/workflows/ci.yml) が自動実行されます。
 
+- **`Lint Python Scripts` ジョブ**: `ruff check` および `ruff format --check` による静的解析・構文検査を実施します。
 - **`Test Python Scripts` ジョブ**: 本ガイドに記載の全単体テストを Ubuntu ランナー上で自動検証します。
 - **`Test Composite Actions` ジョブ**: `setup-keystore` などのシェルスクリプトを含む Action の実動作を検証します。
 
-コードを変更した際は、ローカルでテストが全件パスすることを確認した上で PR を作成してください。
+コードを変更した際は、ローカルで Lint およびテストが全件パスすることを確認した上で PR を作成してください。

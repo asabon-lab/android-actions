@@ -10,6 +10,14 @@ inputs:
     description: 'Path to save the analysis report in Markdown format (optional)'
     required: false
     default: ''
+  enable-summary:
+    description: 'Whether to append the analysis report to GitHub Step Summary (default: true)'
+    required: false
+    default: 'true'
+  emit-annotations:
+    description: 'Whether to emit GitHub workflow command annotations (::error, ::warning) (default: true)'
+    required: false
+    default: 'true'
 
 outputs:
   report-path:
@@ -31,12 +39,20 @@ runs:
       env:
         LOG_FILE_PATH: ${{ inputs.log-file-path }}
         REPORT_PATH: ${{ inputs.report-path }}
+        ENABLE_SUMMARY: ${{ inputs.enable-summary }}
+        EMIT_ANNOTATIONS: ${{ inputs.emit-annotations }}
       run: |
         ARGS=(
           "--log-file-path" "$LOG_FILE_PATH"
         )
         if [ -n "$REPORT_PATH" ]; then
           ARGS+=("--report-path" "$REPORT_PATH")
+        fi
+        if [ "$ENABLE_SUMMARY" = "false" ]; then
+          ARGS+=("--disable-summary")
+        fi
+        if [ "$EMIT_ANNOTATIONS" = "false" ]; then
+          ARGS+=("--disable-annotations")
         fi
 
         if command -v python3 >/dev/null 2>&1; then
